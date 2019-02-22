@@ -1,0 +1,15 @@
+version: '2'
+services:
+  algoboxpsql:
+    image: postgres:9.6-alpine
+    environment:
+      PGDATA: /data/postgres/data
+      POSTGRES_DB: algobox
+      POSTGRES_PASSWORD: algobox
+      POSTGRES_USER: algobox
+    stdin_open: true
+    tty: true
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
