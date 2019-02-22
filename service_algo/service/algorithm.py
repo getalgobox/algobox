@@ -104,7 +104,7 @@ def algorithm_execute(algorithm_id):
     {
         "topic": "GDAX:BTC-USD:5M",
         "format": "CANDLE"
-        "this_update": {},
+        "update": {},
         "context": [],
     }
     """

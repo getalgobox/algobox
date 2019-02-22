@@ -1,7 +1,6 @@
 import os
 import json
 import service
-import unittest
 
 import pytest
 import sqlalchemy
@@ -48,7 +47,7 @@ def test_create_algorithm(client, psql):
         "subscribes_to": ["GDAX:BTC-USD:5M"],
         "historical_context_number": 40
     })
-    
+
     assert len(json.loads(client.get("/algorithm/").data)) > 0
 
     psql_stop(container)

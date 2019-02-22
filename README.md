@@ -12,3 +12,6 @@ as a learning experience. The project is not yet ready for general use,
 though if you would like to contribute this would be welcome.
 
 Roadmap soon.
+
+# todo
+ - [ ] global models and a shared package for classes needed everywhere
