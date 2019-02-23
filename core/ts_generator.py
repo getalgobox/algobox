@@ -19,7 +19,7 @@ class CandleTimeSeriesGenerator(object):
         Random candle series. Not appropriate for testing strategies, only
         for testing the application itself.
 
-        !TODO refactor to reduce reuse
+        !TODO refactor to improve reuse
 
         :param dt_from: datetime; when to start
         :param dt_to: datetime; when to finish
