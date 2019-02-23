@@ -19,6 +19,10 @@ def client():
 
 @pytest.fixture
 def psql():
+    """
+    We need to modify the application to accept a seperate
+    sessionmaker for testing. !TODO
+    """
     psql_container = PostgresContainer("postgres:9.6")
     psql_container.POSTGRES_USER = "test"
     psql_container.POSTGRES_PASSWORD = "test"
@@ -40,14 +44,32 @@ def test_create_algorithm(client, psql):
     container = psql["container"]
     session = psql["session"]
 
-    client.post("/algorithm/", json={
-        "algorithm_name": "Lambo by Monday",
+    response = client.post("/algorithm/", json={
+        "name": "Lambo by Monday",
         "execution_code": "some python code",
-        "data_format": "CANDLE" or "TICK",
+        "data_format": "CANDLE",
         "subscribes_to": ["GDAX:BTC-USD:5M"],
         "historical_context_number": 40
     })
 
+    assert response.status_code == 201
+    assert len(json.loads(client.get("/algorithm/").data)) > 0
+
+    psql_stop(container)
+
+def test_create_algortihm_missing_field(client, psql):
+    container = psql["container"]
+    session = psql["session"]
+
+    response = client.post("/algorithm/", json={
+        "name": "Lambo by Monday",
+        "execution_code": "some python code",
+        "data_format": "CANDLE",
+        "historical_context_number": 40
+    })
+
+    assert response.status_code == 400
+    assert b" key is required" in response.data
     assert len(json.loads(client.get("/algorithm/").data)) > 0
 
     psql_stop(container)

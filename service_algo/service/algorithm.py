@@ -12,13 +12,13 @@ algorithm_bp = Blueprint('algorithm', __name__)
 
 class GetOrThrowDict(collections.UserDict):
     """
-        Used to wrap dictionaries which should always have keys we request with
-        __getitem__.
+    Used to wrap dictionaries which should always have keys we request with
+    __getitem__.
 
-        If a key is not present the user has made a mistake, and should
-        be informed that they are missing a required key.
+    If a key is not present the user has made a mistake, and should
+    be informed that they are missing a required key.
 
-        If a key is optional, the get method should be used as this is unchanged.
+    If a key is optional, the get method should be used as this is unchanged.
     """
 
     def __getitem__(self, key):
@@ -29,6 +29,7 @@ class GetOrThrowDict(collections.UserDict):
                 "error": "the '{}' key is required but was was not found in\
                 the object you provided.".format(key).replace("\n", "")
             }), 400))
+
 
 @algorithm_bp.route("/", methods=["GET"])
 def get_all_algorithm():
@@ -62,7 +63,7 @@ def algorithm_post():
        ticks previous to this one which will be available to the algorithm in
        its context upon execution, defaults to 30.
 
-      Eventually listens to will support regex or something more flexible.
+      Eventually subscribes_to will support regex or something more flexible.
 
       Returns a json object of the new record in full, including unique ID.
     """
@@ -102,9 +103,9 @@ def algorithm_execute(algorithm_id):
     Expects to receive the following from the data or backtesting service.
 
     {
-        "topic": "GDAX:BTC-USD:5M",
-        "format": "CANDLE"
         "update": {},
         "context": [],
+        "topic": "GDAX:BTC-USD:5M",
+        "format": "CANDLE"
     }
     """
