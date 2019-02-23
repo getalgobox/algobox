@@ -1,0 +1,2 @@
+class ABBaseException(Exception):
+    pass

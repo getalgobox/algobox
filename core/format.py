@@ -1,22 +1,16 @@
 import datetime as dt
 
-class DataFormat(object):
+class ABDataFormat(object):
     pass
 
-class Candle(DataFormat):
-    def __init__(self, d):
-        self.datetime = None # !TODO
-        self.open = d["open"]
-        self.low = d["low"]
-        self.high = d["high"]
-        self.close = d["close"]
-
-        if "volume" in d:
-            self.volume = d["volume"]
-        else:
-            self.volume = None
-
-        self.data = d
+class Candle(ABDataFormat):
+    def __init__(self, this_dt, open, high, low, close, volume=None):
+        self.this_dt = this_dt
+        self.open = open
+        self.high = high
+        self.low = low
+        self.close = close
+        self.volume = volume
 
     @property
     def price(self):
@@ -25,10 +19,36 @@ class Candle(DataFormat):
     @property
     def average_price(self):
         # exclude volume
-        return sum(self.open, self.low, self.high, self.close) / 4
+        return sum(self.open, self.high, self.low, self.close) / 4
+
+    def __repr__(self):
+        return "<algobox.core.format.Candle> {}|O:{}|H:{}|L:{}|C:{}|V:{}".format(
+            self.this_dt.isoformat(), self.open, self.high, self.low, self.close, self.volume
+        )
 
 
+    @classmethod
+    def from_dict(cls, d):
+        volume = d.get("volume", None)
+        return cls(
+            this_dt=d["this_dt"],
+            open=d["open"],
+            low=d["low"],
+            high=d["high"],
+            close=d["close"],
+            volume=volume
+        )
 
+    def to_dict(self):
+        return {
+            "this_dt": self.this_dt,
+            "open": self.open,
+            "low": self.low,
+            "high": self.high,
+            "close": self.close,
+            "volume": self.volume
+        }
 
-class Tick(DataFormat):
-    pass
+class Tick(ABDataFormat):
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError("the Tick data format is not currently supported")
