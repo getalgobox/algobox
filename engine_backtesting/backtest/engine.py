@@ -1,3 +1,4 @@
+import inspect
 
 class Backtest(object):
 
@@ -17,36 +18,32 @@ class Backtest(object):
          service.
         :param historical_context_number: number of previous data updates to
          include as context.
-        :param data: optional list of ABDataFormat instances, candle or tick.
-         Currently, we are only supporting candles. If this list is not provided
-         data will be queried from the TSDB (tbd).
+        :param data: list or generator; produces or contains instances of
+         ABDataFormat instances. Currently we only support Candle. If this param
+         is not provided data will be queried from the TSDB (tbd) !TODO.
         """
 
-        self.data = data
+        self.topic = topic
+        self.start = dt_from
+        self.end = dt_to
+        self.algo_id = algo_id
+        self.historical_context_number = historical_context_number
 
-        if not data:
-            # query all data
-            pass
+        if data and isinstance(data, list):
+            self.list_handler = ListDataHandler
+        elif data and inspect.isgenerator(data):
+            self.data_handler = GeneratorHandler
+        else:
+            raise NotImplemented("No data was provided, we do not currently \
+            support retrieving this from a database. Please provide the `data` \
+            parameter. See docs/help.")
 
-        self.data = [core.format.Candle(d) for d in data]
+        def temp_push_to_algo(*args, **kwargs):
+            """
+            In reality we want to push to the algoservice as if we were the
+            data service, but for now we can pretend that we received a
+            `core.Signal.NO_ACTION` in response.
+            """
+            return const.Signal.NO_ACTION
 
-    def _finalise_backtest(self):
-        """
-        This method will update the backtest record with the final results.
-        """
-        pass
-
-    def next(self):
-        """
-        Give the next update.
-        """
-        pass
-
-    def main(self):
-        for i, update in enumerate(self.data[historical_context_number:-1]):
-            context = {
-                "update": update,
-                "context": self.data[i:i+]
-                "format": self.format
-                "topic": self.topic
-            }
+        self.push_to_algo = temp_push_to_algo
