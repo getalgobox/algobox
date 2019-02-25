@@ -3,8 +3,12 @@ import datetime as dt
 import core.exceptions
 
 """
-The TradingHours classes are very basic for now. We will need something more
-comprehensive. For example; bank holidays, christmas, thanksgiving etc
+The TradingHours classes are very basic for now. It exists mostly as a utility
+for the ts_generator for now. It may be useful for backtesting.
+
+In practice this should be delt with by the exchange connector whenever we
+get around to implementing that. Data sources for backtests should on provide
+data when the market is open.
 """
 
 class TradingHours(object):
@@ -45,7 +49,6 @@ class FTSE(TradingHours):
     close = dt.time(hour=17, minute=0)
     trading_days = {1, 2, 3, 4, 5}
     tz = None
-
 
 class CryptoGeneral(TradingHours):
     open = dt.time(hour=0, minute=0)

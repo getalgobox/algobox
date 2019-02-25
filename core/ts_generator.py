@@ -14,7 +14,7 @@ import core.format
 
 
 class CandleTimeSeriesGenerator(object):
-    def __init__(self, dt_from, dt_to, trading_hours, interval):
+    def __init__(self, dt_from, dt_to, trading_hours, interval, topic):
         """
         Random candle series. Not appropriate for testing strategies, only
         for testing the application itself.
@@ -30,6 +30,7 @@ class CandleTimeSeriesGenerator(object):
 
         self.start = dt_from
         self.end = dt_to
+        self.topic = topic
 
         # str is now equivalent to basestring for str type checking in py3?
         if isinstance(interval, str):
@@ -54,10 +55,11 @@ class CandleTimeSeriesGenerator(object):
                 random_prices = list(np.random.normal(loc=mean, scale=stdev, size=64))
                 random_prices = sorted({round(p, 2) for p in random_prices})
 
-                # we could ensure open and close are unique, but that wouldn't
-                # be elegant and sometimes they are the same irl.
+                # we could ensure open and close are unique by popping the
+                # selected value, but it's not particularly important or realistic
                 new_candle = core.format.Candle(
                     this_dt=this_dt,
+                    topic=self.topic
                     high=random_prices[-1],
                     low=random_prices[0],
                     open=random.choice(random_prices[1:-2]),

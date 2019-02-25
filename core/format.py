@@ -4,13 +4,14 @@ class ABDataFormat(object):
     pass
 
 class Candle(ABDataFormat):
-    def __init__(self, this_dt, open, high, low, close, volume=None):
+    def __init__(self, this_dt, topic, open, high, low, close, volume=None):
         self.this_dt = this_dt
         self.open = open
         self.high = high
         self.low = low
         self.close = close
         self.volume = volume
+        self.topic = topic
 
     @property
     def price(self):
@@ -22,8 +23,9 @@ class Candle(ABDataFormat):
         return sum(self.open, self.high, self.low, self.close) / 4
 
     def __repr__(self):
-        return "<algobox.core.format.Candle> {}|O:{}|H:{}|L:{}|C:{}|V:{}".format(
-            self.this_dt.isoformat(), self.open, self.high, self.low, self.close, self.volume
+        return "<algobox.core.format.Candle> {}|{}|O:{}|H:{}|L:{}|C:{}|V:{}".format(
+            self.topic, self.this_dt.isoformat(), self.open, self.high, self.low,
+            self.close, self.volume
         )
 
 
