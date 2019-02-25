@@ -11,7 +11,7 @@ from core.time import FTSE
 def candles():
     dt_from = dt.datetime(year=2018, month=1, day=1)
     dt_to = dt.datetime(year=2019, month=1, day=1)
-    gen = CandleTimeSeriesGenerator(dt_from, dt_to, FTSE(), "1h")
+    gen = CandleTimeSeriesGenerator(dt_from, dt_to, FTSE(), "1h", "FTSE:LLOY:1D")
     candles = list(gen)
     return candles
 

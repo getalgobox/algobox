@@ -7,7 +7,7 @@ import datetime as dt
 
 import pytest
 
-from backtest.engine import Backtest
+from core.backtest.manager import BacktestManager
 import core
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def daily_series():
     data = core.ts_generator.CandleTimeSeriesGenerator(
         dt_from=dt_from,
         dt_to=dt_to,
-        trading_hours=self.core.time.FTSE(),
+        trading_hours=core.time.FTSE(),
         interval="1d",
         topic="GDAX:BTC-USD:5M"
     )
@@ -36,7 +36,7 @@ def test_run_backtest(daily_series):
         interval="1d"
     )
 
-    bt = Backtest("GDAX:BTC-USD:5M", )
+    bt = BacktestManager("GDAX:BTC-USD:5M", )
 
 def test_no_look_forward(daily_series):
     for day in daily_series:

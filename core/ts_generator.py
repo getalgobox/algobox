@@ -41,8 +41,14 @@ class CandleTimeSeriesGenerator(object):
         self.trading_hours = trading_hours
 
     def __iter__(self):
+        return self
+
+    def __next__(self):
         stdev = 0.03
-        this_dt = self.start
+        try:
+            this_dt = self.previous_candle.datetime
+        except:
+            this_dt = self.start
 
         while this_dt <= self.end:
             if not self.previous_candle:
@@ -59,7 +65,7 @@ class CandleTimeSeriesGenerator(object):
                 # selected value, but it's not particularly important or realistic
                 new_candle = core.format.Candle(
                     this_dt=this_dt,
-                    topic=self.topic
+                    topic=self.topic,
                     high=random_prices[-1],
                     low=random_prices[0],
                     open=random.choice(random_prices[1:-2]),
@@ -68,9 +74,9 @@ class CandleTimeSeriesGenerator(object):
                 )
                 self.previous_candle = new_candle
 
-                yield new_candle
+                return new_candle
 
-            this_dt = self.previous_candle.this_dt + self.interval
+            this_dt = self.previous_candle.datetime + self.interval
             if not self.trading_hours.open_at(this_dt):
                 this_dt = self.trading_hours.next_open(this_dt)
 
@@ -80,6 +86,7 @@ class CandleTimeSeriesGenerator(object):
 
             new_candle = core.format.Candle(
                 this_dt=this_dt,
+                topic=self.topic,
                 high=random_prices[-1],
                 low=random_prices[0],
                 open=self.previous_candle.close,
@@ -88,6 +95,5 @@ class CandleTimeSeriesGenerator(object):
             )
             self.previous_candle = new_candle
 
-            yield new_candle
-        # StopIteration is depreciated. Just use return.
-        return
+            return new_candle
+        raise StopIteration()

@@ -5,7 +5,7 @@ class ABDataFormat(object):
 
 class Candle(ABDataFormat):
     def __init__(self, this_dt, topic, open, high, low, close, volume=None):
-        self.this_dt = this_dt
+        self.datetime = this_dt
         self.open = open
         self.high = high
         self.low = low
@@ -24,7 +24,7 @@ class Candle(ABDataFormat):
 
     def __repr__(self):
         return "<algobox.core.format.Candle> {}|{}|O:{}|H:{}|L:{}|C:{}|V:{}".format(
-            self.topic, self.this_dt.isoformat(), self.open, self.high, self.low,
+            self.topic, self.datetime.isoformat(), self.open, self.high, self.low,
             self.close, self.volume
         )
 
@@ -43,7 +43,7 @@ class Candle(ABDataFormat):
 
     def to_dict(self):
         return {
-            "this_dt": self.this_dt,
+            "this_dt": self.datetime,
             "open": self.open,
             "low": self.low,
             "high": self.high,

@@ -12,8 +12,7 @@ class TransactionEvent(ABEvent):
 
     @classmethod
     def give_child(cls, direction):
-        if direction = core.const.Event.TRANSACTION_BUY:
-            return
+        pass
 
 class TransactionBuy(TransactionEvent):
 

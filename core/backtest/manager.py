@@ -1,6 +1,6 @@
 import inspect
 
-class Backtest(object):
+class BacktestManager(object):
 
     def __init__(self, topic, dt_from, dt_to, algo_id, historical_context_number=30,
         data=None):
@@ -30,9 +30,9 @@ class Backtest(object):
         self.historical_context_number = historical_context_number
 
         if data and isinstance(data, list):
-            self.list_handler = ListDataHandler
+            self.list_handler = ListDataHandler(data, historical_context_number)
         elif data and inspect.isgenerator(data):
-            self.data_handler = GeneratorHandler
+            self.data_handler = GeneratorHandler(data, historical_context_number)
         else:
             raise NotImplemented("No data was provided, we do not currently \
             support retrieving this from a database. Please provide the `data` \
