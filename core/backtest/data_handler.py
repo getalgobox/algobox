@@ -90,7 +90,7 @@ class GeneratorHandler(DataHandler):
         return update
 
 
-class CSVGeneratorHandler(DataHandler):
+class CSVHandler(DataHandler):
     def __init__(self, *args, **kwargs):
         raise NotImplementedError("This class is not yet implemented. \
         Process the csv yourself either into a list of core.format.Candle's \
