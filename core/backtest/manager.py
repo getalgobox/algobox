@@ -1,14 +1,17 @@
 import inspect
 
+from core.backtest import data_handler
+from core.exceptions import NoMoreData
+
 class BacktestManager(object):
 
     def __init__(self, topic, dt_from, dt_to, algo_id, historical_context_number=30,
         data=None):
         """
-        The backtest instance. This is the class that will drive the backtest.
+        This is the class that will drive the backtest.
 
         It knows only the id of the algorithm it will call, nothing about the
-        code it will execute.
+        code it will execute, which will be handled by another service.
 
         :param topic: string; the 'key' of the data the backtest will use. The
          data it cares about.
@@ -30,11 +33,15 @@ class BacktestManager(object):
         self.historical_context_number = historical_context_number
 
         if data and isinstance(data, list):
-            self.list_handler = ListDataHandler(data, historical_context_number)
-        elif data and inspect.isgenerator(data):
-            self.data_handler = GeneratorHandler(data, historical_context_number)
+            self.list_handler = data_handler.ListDataHandler(
+                data, historical_context_number
+            )
+        elif data and inspect.isgenerator(data)or hasattr(data, "__next__"):
+            self.data_handler = data_handler.GeneratorHandler(
+                data, historical_context_number
+            )
         else:
-            raise NotImplemented("No data was provided, we do not currently \
+            raise NotImplementedError("No data was provided, we do not currently \
             support retrieving this from a database. Please provide the `data` \
             parameter. See docs/help.")
 
@@ -47,3 +54,13 @@ class BacktestManager(object):
             return const.Signal.NO_ACTION
 
         self.push_to_algo = temp_push_to_algo
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            context, update =  self.data_handler.next()
+        except NoMoreData:
+            raise StopIteration
+        return context, update

@@ -12,32 +12,34 @@ import core
 
 @pytest.fixture
 def daily_series():
-    dt_from = dt.datetime(year=2018, month=10, day=1)
-    dt_to = dt.datetime(year=2019, month=2, day=1)
+    dt_from = dt.datetime(year=2015, month=1, day=1)
+    dt_to = dt.datetime(year=2018, month=12, day=1)
 
     data = core.ts_generator.CandleTimeSeriesGenerator(
         dt_from=dt_from,
         dt_to=dt_to,
         trading_hours=core.time.FTSE(),
         interval="1d",
-        topic="GDAX:BTC-USD:5M"
+        topic="GDAX:BTC-USD:1D"
     )
 
     return data
 
 def test_run_backtest(daily_series):
-    dt_from = dt.datetime(year=2018, month=10, day=1)
-    dt_to = dt.datetime(year=2019, month=2, day=1)
 
-    data = core.ts_generator.CandleTimeSeriesGenerator(
-        dt_from=dt_from,
-        dt_to=dt_to,
-        trading_hours=self.core.time.FTSE(),
-        interval="1d"
+    bt = BacktestManager(
+        topic="GDAX:BTC-USD:1D",
+        dt_from=daily_series.start,
+        dt_to=daily_series.end,
+        algo_id=str(uuid.uuid4()),
+        historical_context_number=30,
+        data=daily_series
     )
 
-    bt = BacktestManager("GDAX:BTC-USD:5M", )
+    prev_update = None
 
-def test_no_look_forward(daily_series):
-    for day in daily_series:
-        pass
+    for context, update in bt:
+        if prev_update:
+            assert context[-1] == prev_update
+            assert len(context) == 30
+            assert max(context) < update

@@ -53,10 +53,9 @@ class ListHandler(DataHandler):
             update = self.data[self.index]
         except IndexError:
             raise NoMoreData("We have no more data available for this series")
-        
+
         self.index += 1
         return update
-
 
 
 class GeneratorHandler(DataHandler):
@@ -89,6 +88,7 @@ class GeneratorHandler(DataHandler):
 
         self.context.append(update)
         return update
+
 
 class CSVGeneratorHandler(DataHandler):
     def __init__(self, *args, **kwargs):
