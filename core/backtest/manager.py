@@ -1,12 +1,15 @@
 import inspect
 
+import core
+
 from core.backtest import data_handler
 from core.exceptions import NoMoreData
+
 
 class BacktestManager(object):
 
     def __init__(self, topic, dt_from, dt_to, algo_id, historical_context_number=30,
-        data=None):
+        data=None, algo_service_uri=None):
         """
         This is the class that will drive the backtest.
 
@@ -31,6 +34,7 @@ class BacktestManager(object):
         self.end = dt_to
         self.algo_id = algo_id
         self.historical_context_number = historical_context_number
+        self.algo_service_uri = algo_service_uri or "http://algoservice:5550"
 
         if data and isinstance(data, list):
             self.list_handler = data_handler.ListDataHandler(
@@ -45,15 +49,7 @@ class BacktestManager(object):
             support retrieving this from a database. Please provide the `data` \
             parameter. See docs/help.")
 
-        def temp_push_to_algo(*args, **kwargs):
-            """
-            In reality we want to push to the algoservice as if we were the
-            data service, but for now we can pretend that we received a
-            `core.Signal.NO_ACTION` in response.
-            """
-            return const.Signal.NO_ACTION
-
-        self.push_to_algo = temp_push_to_algo
+        self.push_update = self._push_update
 
     def __iter__(self):
         return self
@@ -64,3 +60,13 @@ class BacktestManager(object):
         except NoMoreData:
             raise StopIteration
         return context, update
+
+    def _push_update(self, context, update):
+        d = {
+            "context": [candle.to_dict() for candle in context],
+            "update": update.to_dict()
+        }
+
+
+    def _dry_push_update(self, context, update):
+        return core.const.Signal.NO_ACTION

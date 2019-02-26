@@ -84,8 +84,6 @@ def test_next_open_same_day_bug():
         hour=9, minute=0
     )
 
-
-
 def test_candle_string_to_time_delta():
     assert interval_string_to_time_delta("30s") == dt.timedelta(seconds=30)
 

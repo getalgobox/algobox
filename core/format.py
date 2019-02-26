@@ -33,17 +33,19 @@ class Candle(ABDataFormat):
     def from_dict(cls, d):
         volume = d.get("volume", None)
         return cls(
-            this_dt=d["this_dt"],
+            this_dt=dt.datetime.fromtimestamp(d["datetime"]),
+            topic=d["topic"],
             open=d["open"],
             low=d["low"],
             high=d["high"],
             close=d["close"],
-            volume=volume
+            volume=volume,
         )
 
     def to_dict(self):
         return {
-            "this_dt": self.datetime,
+            "datetime": self.datetime.timestamp(),
+            "topic": self.topic,
             "open": self.open,
             "low": self.low,
             "high": self.high,
