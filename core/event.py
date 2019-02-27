@@ -12,7 +12,7 @@ class ABEvent(object):
         * datetime (datetime.datetime) pass the datetime the event occured here,
             alternatively will default to the datetime on initialisation.
     """
-    def __init__(self, type, data, datetime=None):
+    def __init__(self, type, data=None, datetime=None):
         self.type = type
         self.data = data
         self.datetime = datetime or dt.datetime.utcnow()

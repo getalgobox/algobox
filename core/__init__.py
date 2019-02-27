@@ -1,9 +1,10 @@
 __all__=[
     "backtest",
+    "reporting"
 ]
 
-import core.algorithm
 import core.const
+import core.algorithm
 import core.exceptions
 import core.format
 import core.series

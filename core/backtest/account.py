@@ -14,9 +14,6 @@ class BacktestAccount(object):
         self.holdings = collections.defaultdict(int)
         self.balance_series = [starting_balance]
 
-    def set_balance(self, balance):
-        self.balance = balance
-
     @property
     def holdings_total(self):
         """
@@ -29,13 +26,16 @@ class BacktestAccount(object):
 
     @property
     def is_bankrupt(self):
-         return (balance < 1 and self.total_asset_count == 0)
+         return (self.balance < 1 and self.holdings_total == 0)
+
+    def set_balance(self, balance):
+        self.balance = balance
 
     def calculate_equity(self, latest_asset_price):
         # assumes BacktestManager is only tracking one asset, we iterate because
         # we don't know the name of the asset and it doesn't matter, there should
         # only be one
-        equity_value = latest_asset_price * self.total_asset_count
+        equity_value = latest_asset_price * self.holdings_total
 
         return self.balance + equity_value
 

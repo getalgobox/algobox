@@ -167,18 +167,19 @@ class BacktestManager(object):
 
         return json.loads(response.text)["signal"]
 
-    def _finalise(self):
-        """
-        Finalise the backtest, generate ffn report.
-        """
-        pass
-
-
     def _dry_push_update(self, context, update):
         """
         Don't update any algorithm for a signal.
         """
         return {"signal": core.const.Event.SIGNAL_NO_ACTION}
 
+    def finalise(self):
+        """
+        Finalise the backtest, generate ffn report.
+        """
+        pass
+
 class MultiAssetBacktestManager(BacktestManager):
+    """
+    """
     pass

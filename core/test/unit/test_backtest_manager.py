@@ -7,8 +7,8 @@ import datetime as dt
 
 import pytest
 
-from core.backtest.manager import BacktestManager
 import core
+from core.backtest.manager import BacktestManager
 
 @pytest.fixture
 def daily_series():
