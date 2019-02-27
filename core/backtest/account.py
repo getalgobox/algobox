@@ -5,27 +5,22 @@ from abc import ABC, abstractmethod
 
 class BacktestAccount(ABAccount):
     """
-    Tracks everything relevant to the trading account including cash balance,
-    assets held, etc
+    Tracks the things your broker would usually track. Your balance and assets
+    held.
     """
+
     def __init__(self, starting_balance):
         self.balance = starting_balance
         self.holdings = collections.defaultdict(int)
         self.balance_series = [starting_balance]
 
-    def calculate_equity():
-        pass
-
-    def cash_asset_split(self):
-
-
-    @property
-    def equity(self):
-        return sum()
+    def calculate_equity(self, latest_asset_price):
+        return sum(self.balance + (latest_asset_price * holdings))
 
     def purchase(self, asset, latest_price):
         """
-        Backtest assumes max quantity of assets purchased
+        Backtest assumes max quantity of assets purchased. It also assumes that
+        orders are filled at the price given.
         """
         current_cash = self.balance
         quantity_to_purchase =  int(current_cash / latest_price)
@@ -34,9 +29,10 @@ class BacktestAccount(ABAccount):
         self.holdings[asset] = quantity_to_purchase
         self.balance = self.balance - cost_to_purchase
 
-    def sell(self, asset, quantity, latest_price):
+    def sell(self, asset, latest_price):
         """
-        Backtest assumes sale of all of specified asset
+        Backtest assumes max quantity of assets sold. It also assumes that
+        orders are filled at the price given.
         """
         current_cash = self.balance
         quantity_to_sell = self.holdings[asset]

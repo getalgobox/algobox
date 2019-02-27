@@ -14,7 +14,7 @@ class DataHandler(ABC):
     This interface makes it simple to add more supported types to the Backtesting
     engine and makes it pretty easy to implement a type.
 
-    What should the behaviour be when we have no further data? !TODO
+    it will raise a core.exceptions.NoMoreData when there is no more data.
     """
 
     @abstractmethod
@@ -34,6 +34,7 @@ class DataHandler(ABC):
         context = self._get_context()
         update = self._get_update()
         return context, update
+
 
 class ListHandler(DataHandler):
     def __init__(self, list, historical_context_number):

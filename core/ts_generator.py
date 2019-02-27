@@ -14,20 +14,21 @@ import core.format
 
 
 class CandleTimeSeriesGenerator(object):
+    """
+    Random candle series. Not appropriate for testing strategies, only
+    for testing the application itself.
+
+    !TODO refactor to improve reuse
+
+    Arguments:
+        * dt_from (datetime) when to start
+        * dt_to (datetime) when to finish
+        * trading_hours (core)time.TradingHours; a TradingHours child class
+            describing trading hours for the exchange of this thing.
+        * interval (string, datetime.timedelta)
+    """
+
     def __init__(self, dt_from, dt_to, trading_hours, interval, topic):
-        """
-        Random candle series. Not appropriate for testing strategies, only
-        for testing the application itself.
-
-        !TODO refactor to improve reuse
-
-        :param dt_from: datetime; when to start
-        :param dt_to: datetime; when to finish
-        :param trading_hours: core.time.TradingHours; a TradingHours child class
-         describing trading hours for the exchange of this thing.
-        :interval integer:
-        """
-
         self.start = dt_from
         self.end = dt_to
         self.topic = topic

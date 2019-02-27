@@ -1,23 +1,18 @@
+import datetime as dt
+
 import core
 
 class ABEvent(object):
-    """AlgoBox event object"""
-    def __init__(self, type, details):
-        pass
+    """
+    AlgoBox event object
 
-class TransactionEvent(ABEvent):
-    def __init__(self, event, topic, dt_occured, quantity, price):
-
-        pass
-
-    @classmethod
-    def give_child(cls, direction):
-        pass
-
-class TransactionBuy(TransactionEvent):
-
-    def __init__(self):
-        pass
-
-class TransactionSell(TransactionEvent):
-    pass
+    Attributes:
+        * type (String) the type of event, one of core.const.Event.*
+        * data (Object) some sort of payload attached to the event
+        * datetime (datetime.datetime) pass the datetime the event occured here,
+            alternatively will default to the datetime on initialisation.
+    """
+    def __init__(self, type, data, datetime=None):
+        self.type = type
+        self.data = data
+        self.datetime = datetime or dt.datetime.utcnow()

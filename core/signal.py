@@ -1,10 +1,8 @@
 #  signal class
+from datetime import dt
 
-class Signal(object):
-    pass
+from core.event import ABEvent
 
-class BuySignal(Signal):
-    pass
-
-class SellSignal(Signal):
-    pass
+class Signal(ABEvent):
+    raise NotImplementedError("May be removed unless we require additional logic \
+    which ABEvent does not support.")
