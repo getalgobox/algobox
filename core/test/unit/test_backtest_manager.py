@@ -36,6 +36,8 @@ def test_run_backtest(daily_series):
         data=daily_series
     )
 
+    bt.push_update = bt._dry_push_update
+
     prev_update = None
 
     for context, update in bt:

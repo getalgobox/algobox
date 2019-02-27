@@ -13,9 +13,9 @@ class Topic(object):
         in this way.
         """
         x = topic.split(":")
-        self.exchange[0]
-        self.asset[1]
-        self.interval[2]
+        self.exchange = x[0]
+        self.asset = x[1]
+        self.interval = x[2]
         self.interval_timedelta = core.time.interval_string_to_time_delta(
             self.interval
         )

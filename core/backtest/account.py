@@ -3,7 +3,7 @@ import collections
 
 from abc import ABC, abstractmethod
 
-class BacktestAccount(ABAccount):
+class BacktestAccount(object):
     """
     Tracks the things your broker would usually track. Your balance and assets
     held.
@@ -14,8 +14,30 @@ class BacktestAccount(ABAccount):
         self.holdings = collections.defaultdict(int)
         self.balance_series = [starting_balance]
 
+    def set_balance(self, balance):
+        self.balance = balance
+
+    @property
+    def holdings_total(self):
+        """
+        The total quantity of assets owned
+        """
+        total_asset_count = 0
+        for _, v in self.holdings.items():
+            total_asset_count += v
+        return total_asset_count
+
+    @property
+    def is_bankrupt(self):
+         return (balance < 1 and self.total_asset_count == 0)
+
     def calculate_equity(self, latest_asset_price):
-        return sum(self.balance + (latest_asset_price * holdings))
+        # assumes BacktestManager is only tracking one asset, we iterate because
+        # we don't know the name of the asset and it doesn't matter, there should
+        # only be one
+        equity_value = latest_asset_price * self.total_asset_count
+
+        return self.balance + equity_value
 
     def purchase(self, asset, latest_price):
         """

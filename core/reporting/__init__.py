@@ -1,1 +1,1 @@
-import observer
+import core.reporting.observer

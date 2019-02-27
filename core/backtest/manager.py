@@ -1,10 +1,13 @@
 import inspect
+import collections
+
+import ffn
+import requests
 
 import core
 
 from core.backtest import data_handler
 from core.exceptions import NoMoreData
-import ffn
 
 
 class BacktestManager(object):
@@ -77,7 +80,7 @@ class BacktestManager(object):
             self.data_handler = data_handler.ListDataHandler(
                 data, historical_context_number
             )
-        elif data and inspect.isgenerator(data)or hasattr(data, "__next__"):
+        elif data and inspect.isgenerator(data) or hasattr(data, "__next__"):
             self.data_handler = data_handler.GeneratorHandler(
                 data, historical_context_number
             )
@@ -99,7 +102,7 @@ class BacktestManager(object):
             # handle order to be executed now
             while self.on_open_actions:
                 action = self.on_open_actions.pop()
-                if action.type == core.const.SIGNAL_BUY:
+                if action.type == core.const.Event.SIGNAL_BUY:
                     self.observer.update(core.event.ABEvent(
                         type=core.const.TRANSACTION_BUY,
                         data=update.open,
@@ -107,7 +110,7 @@ class BacktestManager(object):
                         )
                     )
                     self.account.purchase(self.topic.asset, update.open)
-                elif action.type == core.const.SIGNAL_SELL:
+                elif action.type == core.const.Event.SIGNAL_SELL:
                     self.observer.update(core.event.ABEvent(
                         type=core.const.TRANSACTION_SELL,
                         data=update.open,
@@ -119,7 +122,7 @@ class BacktestManager(object):
 
             signal = self.push_update(context, update)
 
-            if signal in core.const.SIGNAL_ACTIONABLE:
+            if signal in core.const.Event.SIGNAL_ACTIONABLE:
                 # update.datetime represents the current time in our backtest
                 signal = core.event.ABEvent(signal, {}, update.datetime)
                 self.on_open_actions.append(signal)
@@ -175,4 +178,7 @@ class BacktestManager(object):
         """
         Don't update any algorithm for a signal.
         """
-        return {"signal": core.const.Signal.NO_ACTION}
+        return {"signal": core.const.Event.SIGNAL_NO_ACTION}
+
+class MultiAssetBacktestManager(BacktestManager):
+    pass
