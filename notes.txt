@@ -1,0 +1,2 @@
+We should rename algorithm to strategy; it makes more sense.
+We really need proper logging.. soon..

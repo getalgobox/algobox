@@ -1,5 +1,7 @@
 # Algobox
 
+![](https://i.imgur.com/2HAoR3F.jpg)
+
 Algobox is an open source framework for writing, managing and running trading
 algorithms. It provides an interface and infrastructure for developing, deploying
 and running algorithmic trading bots. It allows users to self-host these bots
@@ -15,3 +17,6 @@ Roadmap soon.
 
 # todo
  - [ ] global models and a shared package for classes needed everywhere
+
+
+http://pmorissette.github.io/ffn/index.html
