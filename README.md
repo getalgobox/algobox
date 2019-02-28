@@ -1,6 +1,4 @@
-# Algobox
-
-![](https://i.imgur.com/2HAoR3F.jpg)
+![AlgoBox](algobox.png)
 
 Algobox is an open source framework for writing, managing and running trading
 algorithms. It provides an interface and infrastructure for developing, deploying
@@ -14,6 +12,8 @@ as a learning experience. The project is not yet ready for general use,
 though if you would like to contribute this would be welcome.
 
 We have a trello board where we track todo's, bugs and more [here](https://trello.com/b/a4PSkfDs/algobox).
+
+![](https://i.imgur.com/2HAoR3F.jpg)
 
 
 # todo
