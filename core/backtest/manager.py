@@ -12,6 +12,7 @@ from core.backtest import data_handler
 from core.exceptions import NoMoreData
 
 
+
 class BacktestManager(object):
     """
     This is the class that will drive the backtest.
@@ -21,6 +22,12 @@ class BacktestManager(object):
 
     This class will also be responsible for updating the account instance
     and observer instance, which will provide reporting statistics.
+
+
+    !TODO think of a name for the push_update property which makes more sense
+    for the user driven script scenario. One option is
+    to create a seperate child class to make working with the BacktestManager
+    more intuitive for a user who would like to use core as a library.
 
     Arguments:
         * topic (string) the 'key' of the data the backtest will use; the
@@ -55,13 +62,19 @@ class BacktestManager(object):
             longer available. The actual signal needs to be executed in
             10:00-10:05 period at open. The BacktestManager currently uses
             the open price of this period.
+        * push_update (function) a function used to 'push' updates from the
+            data_handler to a strategy and retrieve a signal in response.
+            Can be user provided or one of:
+            BacktestManager._pusher_strategy_service,
+            BacktestManager._pusher_dry,
+            BacktestManager._pusher_dry_random
+
     """
 
     def __init__(self, topic, dt_from, dt_to, algo_id, lookback_period=30,
         data=None, algo_service_uri=None, starting_balance = 10000):
 
         self.complete = False
-        self.ran = False
 
         self.topic = core.topic.Topic(topic)
         self.start = dt_from
@@ -94,7 +107,7 @@ class BacktestManager(object):
             support retrieving this from a database. Please provide the `data` \
             parameter. See docs/help.")
 
-        self.push_update = self._push_update
+        self.push_update = self._pusher_strategy_service
 
         self.previous_dt = None
 
@@ -102,12 +115,10 @@ class BacktestManager(object):
         return self
 
     def __next__(self):
-        if not self.ran:
-            self.ran = True
 
         try:
             if self.account.bankrupt:
-                bankrupt_event = core.event.Event(
+                bankrupt_event = core.event.ABEvent(
                     type=core.const.Event.BANKRUPT_ACCOUNT,
                     datetime=self.previous_dt
                 )
@@ -172,15 +183,44 @@ class BacktestManager(object):
             self.previous_dt = update.datetime
 
         except NoMoreData:
-            self.finished = True
+            self.complete = True
             raise StopIteration
 
         return context, update
 
-
-    def _push_update(self, context, update):
+    def pusher_factory(self, user_strategy, additional_imports=[]):
         """
-        This method will push the new update to the algorithm we are testing.
+        This generates the function you should then assign to
+        BacktestManager.push_update
+
+        Arguments:
+            * user_strategy (core.strategy.ABStrategy) user defined strat
+            * additional_imports (list[string]) list of additional modules
+                you would like in your strategy execution environment.
+                See source of core.strategy.execute_strategy to see already
+                included.
+
+        Returns:
+            * pusher_method (function) this method will 'push' data to your
+                strategy and returns the signal your strategy generates
+        """
+
+        def user_pusher(context, update):
+            signal =  core.strategy.execute_strategy(
+                strategy_class=user_strategy,
+                context=context,
+                update=update,
+                additional_imports=additional_imports,
+                lookback_period=self.lookback_period,
+            )
+
+            return signal["signal"]
+
+        return user_pusher
+
+    def _pusher_strategy_service(self, context, update):
+        """
+        This method will push the new update to the strategy_service.
         Upon receiving a response, it will attempt to marshall it from JSON.
         It will return the signal key from this json.
         """
@@ -188,30 +228,26 @@ class BacktestManager(object):
             "context": [candle.to_dict() for candle in context],
             "update": update.to_dict()
         }
+
         response = requests.post(self.algo_service_uri, json=d)
 
         if response.status_code not in [200, 201]:
             raise ValueError("Something went wrong when pushing the update to \
-            the AlgoService.")
+            the Strategy Service.")
 
         return json.loads(response.text)["signal"]
 
-    def _dry_push_update(self, context, update):
+    def _pusher_dry(self, context, update):
         """
         Don't update any algorithm for a signal.
         """
         return {"signal": core.const.Event.SIGNAL_NO_ACTION}["signal"]
 
-    def _dry_push_random_signal(self, context, update):
-        return {"signal": str(
-            np.random.choice(
-                [
-                    core.const.Event.SIGNAL_BUY,
-                    core.const.Event.SIGNAL_SELL,
-                    core.const.Event.SIGNAL_NO_ACTION
-                ], 1, p=[0.15,0.15,0.70]
-            )[0]
-        )}["signal"]
+    def _pusher_dry_random(self, context, update):
+        """
+            Doesn't push any data, returns a random signal.
+        """
+        return core.signal.random()
 
     def finalise(self):
 
