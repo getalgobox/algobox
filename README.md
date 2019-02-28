@@ -13,10 +13,13 @@ The decision has been taken to implement necessary code from scratch,
 as a learning experience. The project is not yet ready for general use,
 though if you would like to contribute this would be welcome.
 
-Roadmap soon.
+We have a trello board where we track todo's, bugs and more [here](https://trello.com/b/a4PSkfDs/algobox).
+
 
 # todo
  - [ ] global models and a shared package for classes needed everywhere
 
 
-http://pmorissette.github.io/ffn/index.html
+# Workflow
+
+Committing straight to master isn't really a crime when you're working alone and have no features or releases to break.. right?
