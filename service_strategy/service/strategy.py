@@ -52,14 +52,14 @@ def strategy_create():
         "execution_code": "some python code",
         "data_format": "CANDLE" or "TICK",
         "subscribes_to": ["GDAX:BTC-USD:5M"],
-        "historical_context_number": 40
+        "lookback_period": 40
     }
 
     - `aname` shall be a unique, user-defined name for the strategy
     - `execution_code` shall contain the code for executing the strategy
     - `data_format` shall specify whether the algorithm listens to candles or ticks
     - `subscribes_to` specifies data sources this strategy will subscribe to
-    - `historical_context_number` optionally specifies the number of candles or
+    - `lookback_period` optionally specifies the number of candles or
        ticks previous to this one which will be available to the algorithm in
        its context upon execution, defaults to 30.
 
@@ -79,8 +79,8 @@ def strategy_create():
         execution_code = new_strategy["execution_code"],
         data_format = new_strategy["data_format"],
         subscribes_to = new_strategy["subscribes_to"],
-        historical_context_number = new_strategy.get(
-            "historical_context_number"
+        lookback_period = new_strategy.get(
+            "lookback_period"
         ) or 30
     )
 

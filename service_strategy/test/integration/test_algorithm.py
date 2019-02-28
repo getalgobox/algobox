@@ -20,7 +20,7 @@ def client():
 @pytest.fixture
 def psql():
     """
-    We need to modify the application to accept a seperate
+    We need to modify the Flask Application to accept a seperate
     sessionmaker for testing. !TODO
     """
     psql_container = PostgresContainer("postgres:9.6")
@@ -49,7 +49,7 @@ def test_create_algorithm(client, psql):
         "execution_code": "some python code",
         "data_format": "CANDLE",
         "subscribes_to": ["GDAX:BTC-USD:5M"],
-        "historical_context_number": 40
+        "lookback_period": 40
     })
 
     assert response.status_code == 201
@@ -65,7 +65,7 @@ def test_create_algortihm_missing_field(client, psql):
         "name": "Lambo by Monday",
         "execution_code": "some python code",
         "data_format": "CANDLE",
-        "historical_context_number": 40
+        "lookback_period": 40
     })
 
     assert response.status_code == 400

@@ -29,7 +29,7 @@ class BacktestManager(object):
         * dt_to (datetime.datetime) when to end the backtest
         * algo_id (uuid, string) The ID of the algorithm according to the algo
             service.
-        * historical_context_number (number)of previous data updates to
+        * lookback_period (number)of previous data updates to
             include as context.
         * data (list)or generator; produces or contains instances of
             ABDataFormat instances. Currently we only support Candle. If this
@@ -43,7 +43,7 @@ class BacktestManager(object):
         * start (datetime.datetime) when to start the backtest
         * end (datetime.datetime) when to end the backtest
         * algo_id (uuid, string)
-        * historical_context_number (integer) number of previous updates to
+        * lookback_period (integer) number of previous updates to
             provide as historical context for the algorithm
             (will be renamed lookback_length)
         * algo_service_uri (string) the uri for the algorithm service
@@ -57,7 +57,7 @@ class BacktestManager(object):
             the open price of this period.
     """
 
-    def __init__(self, topic, dt_from, dt_to, algo_id, historical_context_number=30,
+    def __init__(self, topic, dt_from, dt_to, algo_id, lookback_period=30,
         data=None, algo_service_uri=None, starting_balance = 10000):
 
         self.complete = False
@@ -67,7 +67,7 @@ class BacktestManager(object):
         self.start = dt_from
         self.end = dt_to
         self.algo_id = str(algo_id)
-        self.historical_context_number = historical_context_number
+        self.lookback_period = lookback_period
 
         self.algo_service_uri = algo_service_uri or "http://algoservice:5550"
         self.algo_uuid_uri = self.algo_service_uri + "/" + self.algo_id
@@ -83,11 +83,11 @@ class BacktestManager(object):
 
         if data and isinstance(data, list):
             self.data_handler = data_handler.ListDataHandler(
-                data, historical_context_number
+                data, lookback_period
             )
         elif data and inspect.isgenerator(data) or hasattr(data, "__next__"):
             self.data_handler = data_handler.GeneratorHandler(
-                data, historical_context_number
+                data, lookback_period
             )
         else:
             raise NotImplementedError("No data was provided, we do not currently \

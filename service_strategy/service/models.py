@@ -17,7 +17,7 @@ class Strategy(Base):
     execution_code = Column(String(10000))
     data_format = Column(String(8))
     subscribes_to = Column(String(1024))
-    historical_context_number = Column(Integer)
+    lookback_period = Column(Integer)
     active = Column(Boolean, default=True)
 
     def as_dict(self):
@@ -27,7 +27,7 @@ class Strategy(Base):
             "execution_code": self.execution_code,
             "data_format": self.data_format,
             "subscribes_to": self.subscribes_to,
-            "historical_context_number": self.historical_context_number,
+            "lookback_period": self.lookback_period,
             "active": self.active
         }
 

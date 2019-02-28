@@ -16,7 +16,7 @@ def timeseries():
     )
     return gen
 
-HISTORICAL_CONTEXT_NUMBER = 5
+lookback_period = 5
 
 @pytest.mark.parametrize("timeseries,handler",
     [
@@ -29,7 +29,7 @@ def test_data_handlers(timeseries, handler):
     We expect the handlers to react in the same way according to the DataHandler
     interface. so there is no need for seperate tests.
     """
-    handler = handler(timeseries, HISTORICAL_CONTEXT_NUMBER)
+    handler = handler(timeseries, lookback_period)
     updates = []
     i = 0
     while True:

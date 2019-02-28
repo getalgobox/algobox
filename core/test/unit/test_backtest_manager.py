@@ -32,7 +32,7 @@ def test_run_backtest(daily_series):
         dt_from=daily_series.start,
         dt_to=daily_series.end,
         algo_id=str(uuid.uuid4()),
-        historical_context_number=30,
+        lookback_period=30,
         data=daily_series
     )
 
