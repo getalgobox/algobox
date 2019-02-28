@@ -1,5 +1,8 @@
-import core
+import collections
 
+import pandas as pd
+
+import core
 class ABObserver(object):
     """
     ABObserver stores information which outside of the backtest,
@@ -15,29 +18,67 @@ class ABObserver(object):
     """
 
     def __init__(self):
-
-        self.event_handler_map = {
-            core.const.Event.PRICE_UPDATE: self._handle_asset_price,
-            core.const.Event.EQUITY_UPDATE: self._handle_equity_update,
-            core.const.Event.TRANSACTION_BUY: self._handle_event,
-            core.const.Event.TRANSACTION_SELL: self._handle_event,
-        }
-
-        self.equity_series = []
-        self.asset_price_series = []
-        self.event_series = []
+        self.events = []
 
     def update(self, event):
-        try:
-            self.event_handler_map[event.type](event.data)
-        except KeyError as e:
-            self._handle_event(event)
+        self.events.append(event)
 
-    def _handle_asset_price(self, price):
-        self.asset_price_series.append(price)
+    def _events_to_df(self):
+        account_equity = []
+        asset_price = []
+        cash_ammount = []
+        events = []
 
-    def _handle_equity_update(self, equity):
-        self.equity_series.append(equity)
+        event_list_map =  {
+            core.const.Event.PRICE_UPDATE: account_equity,
+            core.const.Event.EQUITY_UPDATE: asset_price,
+            core.const.Event.CASH_UPDATE: cash_ammount
+        }
 
-    def _handle_event(self, event):
-        self.event_series.append(event)
+        # which key to use to hold price data in list
+        event_key_map =  {
+            core.const.Event.PRICE_UPDATE: "asset",
+            core.const.Event.EQUITY_UPDATE: "equity",
+            core.const.Event.CASH_UPDATE: "cash"
+        }
+
+        for event in self.events:
+            if event.type in event_list_map:
+                event_list_map[event.type].append(
+                    {
+                        "datetime": event.datetime,
+                        event_key_map[event.type]: event.data
+                    }
+                )
+            else:
+                events.append({"datetime": event.datetime, event.type: True})
+
+        account_equity_df = pd.DataFrame(account_equity).set_index("datetime").sort_index()
+        asset_price_df = pd.DataFrame(asset_price).set_index("datetime").sort_index()
+        cash_ammount_df = pd.DataFrame(cash_ammount).set_index("datetime").sort_index()
+        event_df = pd.DataFrame(events).set_index("datetime").sort_index()
+
+        return account_equity_df, asset_price_df, cash_ammount_df, event_df
+
+    def retrieve(self):
+        """
+        Retrieve data in a useable format for analysis.
+
+        Returns:
+            * timeseries (DataFrame) bunch of different series from the backtest
+            * events (DataFrame) events and when they happened, used for charting
+                or something.
+        """
+        equity, asset, cash, events = self._events_to_df()
+        timeseries = pd.concat([equity, asset, cash], axis=1)
+        # merged = pd.merge(
+        #     merged,
+        #     event,
+        #     how='left',
+        #     left_index=True,
+        #     right_index=True
+        # )
+        # merged = merged.groupby(["datetime"], as_index=True)
+
+
+        return timeseries, events

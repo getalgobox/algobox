@@ -24,4 +24,22 @@ def test_backtest_account(account):
     account.set_balance(0)
 
     assert account.balance == 0
-    assert account.is_bankrupt
+    assert account.bankrupt
+
+def test_edge_cases(account):
+    # test we don't buy partial stocks
+    account.set_balance(10)
+    account.purchase("LLOY", 30)
+
+    assert account.balance == 10
+    assert account.holdings["LLOY"] == 0
+
+def test_bankrupt_property(account):
+    account.set_balance(1000)
+    account.purchase("LLOY", 100)
+
+    assert account.holdings["LLOY"] == 10
+
+    account.sell("LLOY", 0)
+
+    assert account.bankrupt

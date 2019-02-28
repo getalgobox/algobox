@@ -4,6 +4,8 @@ import collections
 import ffn
 import requests
 
+import numpy as np
+
 import core
 
 from core.backtest import data_handler
@@ -58,6 +60,9 @@ class BacktestManager(object):
     def __init__(self, topic, dt_from, dt_to, algo_id, historical_context_number=30,
         data=None, algo_service_uri=None, starting_balance = 10000):
 
+        self.complete = False
+        self.ran = False
+
         self.topic = core.topic.Topic(topic)
         self.start = dt_from
         self.end = dt_to
@@ -91,41 +96,56 @@ class BacktestManager(object):
 
         self.push_update = self._push_update
 
+        self.previous_dt = None
+
     def __iter__(self):
         return self
 
     def __next__(self):
+        if not self.ran:
+            self.ran = True
+
         try:
+            if self.account.bankrupt:
+                bankrupt_event = core.event.Event(
+                    type=core.const.Event.BANKRUPT_ACCOUNT,
+                    datetime=self.previous_dt
+                )
+                self.observer.update(bankrupt_event)
+                raise NoMoreData
             # retrieve next set
             context, update = self.data_handler.next()
 
             # handle order to be executed now
+            # !TODO test transactions are made
             while self.on_open_actions:
                 action = self.on_open_actions.pop()
                 if action.type == core.const.Event.SIGNAL_BUY:
                     self.observer.update(core.event.ABEvent(
-                        type=core.const.TRANSACTION_BUY,
-                        data=update.open,
+                        type=core.const.Event.TRANSACTION_BUY,
                         datetime=update.datetime
                         )
                     )
                     self.account.purchase(self.topic.asset, update.open)
                 elif action.type == core.const.Event.SIGNAL_SELL:
                     self.observer.update(core.event.ABEvent(
-                        type=core.const.TRANSACTION_SELL,
-                        data=update.open,
+                        type=core.const.Event.TRANSACTION_SELL,
                         datetime=update.datetime
                         )
                     )
                     self.account.sell(self.topic.asset, update.open)
 
+            # push the context and update to the algorithm* and retrieve signal
+            # *: may be the algorithm or one of the
+            # BacktestManager._dry_push_* methods
 
             signal = self.push_update(context, update)
 
             if signal in core.const.Event.SIGNAL_ACTIONABLE:
                 # update.datetime represents the current time in our backtest
-                signal = core.event.ABEvent(signal, {}, update.datetime)
-                self.on_open_actions.append(signal)
+                event_signal = core.event.ABEvent(type=signal, datetime=update.datetime)
+                self.on_open_actions.append(event_signal)
+                self.observer.update(event_signal)
 
             price_update_event = core.event.ABEvent(
                 type=core.const.Event.PRICE_UPDATE,
@@ -139,13 +159,22 @@ class BacktestManager(object):
                 datetime=update.datetime
             )
 
+            cash_update_event = core.event.ABEvent(
+                type=core.const.Event.CASH_UPDATE,
+                data=self.account.balance,
+                datetime=update.datetime
+            )
+
             # this should happen last, after any trades have executed
             self.observer.update(price_update_event)
             self.observer.update(equity_update_event)
+            self.observer.update(cash_update_event)
+            self.previous_dt = update.datetime
 
         except NoMoreData:
-            self._finalise()
+            self.finished = True
             raise StopIteration
+
         return context, update
 
 
@@ -171,13 +200,29 @@ class BacktestManager(object):
         """
         Don't update any algorithm for a signal.
         """
-        return {"signal": core.const.Event.SIGNAL_NO_ACTION}
+        return {"signal": core.const.Event.SIGNAL_NO_ACTION}["signal"]
+
+    def _dry_push_random_signal(self, context, update):
+        return {"signal": str(
+            np.random.choice(
+                [
+                    core.const.Event.SIGNAL_BUY,
+                    core.const.Event.SIGNAL_SELL,
+                    core.const.Event.SIGNAL_NO_ACTION
+                ], 1, p=[0.15,0.15,0.70]
+            )[0]
+        )}["signal"]
 
     def finalise(self):
+
         """
         Finalise the backtest, generate ffn report.
         """
-        pass
+        backtest_series, events = self.observer.retrieve()
+        performance = backtest_series.calc_stats()
+        return performance
+
+
 
 class MultiAssetBacktestManager(BacktestManager):
     """

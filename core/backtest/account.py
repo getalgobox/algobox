@@ -12,7 +12,6 @@ class BacktestAccount(object):
     def __init__(self, starting_balance):
         self.balance = starting_balance
         self.holdings = collections.defaultdict(int)
-        self.balance_series = [starting_balance]
 
     @property
     def holdings_total(self):
@@ -25,7 +24,7 @@ class BacktestAccount(object):
         return total_asset_count
 
     @property
-    def is_bankrupt(self):
+    def bankrupt(self):
          return (self.balance < 1 and self.holdings_total == 0)
 
     def set_balance(self, balance):
@@ -44,8 +43,14 @@ class BacktestAccount(object):
         Backtest assumes max quantity of assets purchased. It also assumes that
         orders are filled at the price given.
         """
+        import pdb; pdb.set_trace
         current_cash = self.balance
-        quantity_to_purchase =  int(current_cash / latest_price)
+        quantity_to_purchase =  current_cash / latest_price
+
+        if quantity_to_purchase < 1:
+            return
+        quantity_to_purchase = int(quantity_to_purchase)
+
         cost_to_purchase = quantity_to_purchase * latest_price
 
         self.holdings[asset] = quantity_to_purchase
@@ -59,6 +64,9 @@ class BacktestAccount(object):
         current_cash = self.balance
         quantity_to_sell = self.holdings[asset]
         proceeds_of_sale = quantity_to_sell * latest_price
+
+        if quantity_to_sell <= 0:
+            return
 
         self.holdings[asset] = self.holdings[asset] - quantity_to_sell
         self.balance = self.balance + proceeds_of_sale
