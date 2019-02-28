@@ -43,7 +43,6 @@ class BacktestAccount(object):
         Backtest assumes max quantity of assets purchased. It also assumes that
         orders are filled at the price given.
         """
-        import pdb; pdb.set_trace
         current_cash = self.balance
         quantity_to_purchase =  current_cash / latest_price
 

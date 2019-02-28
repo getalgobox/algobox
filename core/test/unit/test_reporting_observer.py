@@ -43,7 +43,6 @@ def complete_bt():
 
     return bt
 
-def test_observer(complete_bt):
-    bt = complete_bt
-    observer = complete_bt.observer
-    import pdb; pdb.set_trace()
+# def test_observer(complete_bt):
+#     bt = complete_bt
+#     observer = complete_bt.observer

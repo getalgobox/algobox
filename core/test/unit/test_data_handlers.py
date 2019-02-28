@@ -40,7 +40,6 @@ def test_data_handlers(timeseries, handler):
         i += 1
 
         updates.append(update)
-        # import pdb; pdb.set_trace()
         assert context[-1].datetime < update.datetime
 
     # total lenght of series(25) - context(5) which aren't provided as updates
