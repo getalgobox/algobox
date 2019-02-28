@@ -25,6 +25,21 @@ def daily_series():
 
     return data
 
+@pytest.fixture
+def bt(daily_series):
+    bt = BacktestManager(
+        topic="GDAX:BTC-USD:1D",
+        dt_from=daily_series.start,
+        dt_to=daily_series.end,
+        algo_id=str(uuid.uuid4()),
+        lookback_period=30,
+        data=daily_series
+    )
+
+    bt.push_update = bt._pusher_dry
+
+    return bt
+
 def test_run_backtest(daily_series):
 
     bt = BacktestManager(
@@ -36,7 +51,7 @@ def test_run_backtest(daily_series):
         data=daily_series
     )
 
-    bt.push_update = bt._dry_push_update
+    bt.push_update = bt._pusher_dry
 
     prev_update = None
 
@@ -45,3 +60,30 @@ def test_run_backtest(daily_series):
             assert context[-1] == prev_update
             assert len(context) == 30
             assert max(context) < update
+
+def test_stop_on_bankruptcy(bt):
+
+    context, update = next(bt)
+    bt.account.set_balance(0)
+
+    with pytest.raises(StopIteration):
+        context, update = next(bt)
+
+    assert bt.complete
+
+def test_run_with_user_pusher(bt):
+    """
+    Tests pusher_factory and user process of using BacktestManager as a
+    backtest engine independently of the backtest service.
+    """
+    class MyAmazingStrat(core.strategy.ABStrategy):
+
+        def on_data(self, context, update):
+            return core.signal.random()
+
+    push_function = bt.pusher_factory(MyAmazingStrat)
+    bt.push_update = push_function
+
+    for context, update in bt:
+        pass
+    

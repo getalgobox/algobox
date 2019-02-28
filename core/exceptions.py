@@ -3,3 +3,6 @@ class ABBaseException(Exception):
 
 class NoMoreData(ABBaseException):
     pass
+
+class AlgoBoxUserStrategyException(ABBaseException):
+    pass

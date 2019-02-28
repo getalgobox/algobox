@@ -36,7 +36,7 @@ def complete_bt():
         data=daily_series
     )
 
-    bt.push_update = bt._dry_push_random_signal
+    bt.push_update = bt._pusher_dry_random
 
     for context, update in bt:
         pass
