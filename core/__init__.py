@@ -4,7 +4,7 @@ __all__=[
 ]
 
 import core.const
-import core.algorithm
+import core.strategy
 import core.exceptions
 import core.format
 import core.series

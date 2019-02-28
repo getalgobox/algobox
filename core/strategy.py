@@ -1,7 +1,7 @@
 from abc import ABC
 from abc import abstractmethod
 
-class ABAlgorithm(ABC):
+class ABStrategy(ABC):
 
     @abstractmethod
     def initialise(self):
