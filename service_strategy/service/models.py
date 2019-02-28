@@ -10,7 +10,7 @@ from config import Config
 Base = declarative_base()
 engine = create_engine(Config.DB_CONNECT_STR)
 
-class Algorithm(Base):
+class Strategy(Base):
     __tablename__ = "algorithm"
     id = Column(UUID, primary_key=True)
     name = Column(String(128))

@@ -5,10 +5,10 @@ import collections
 from flask import Blueprint, request, make_response, abort, jsonify
 from flask import current_app
 
-from service.models import Algorithm
+from service.models import Strategy
 from service.models import give_session
 
-algorithm_bp = Blueprint('algorithm', __name__)
+strategy_bp = Blueprint('strategy', __name__)
 
 class GetOrThrowDict(collections.UserDict):
     """
@@ -31,32 +31,32 @@ class GetOrThrowDict(collections.UserDict):
             }), 400))
 
 
-@algorithm_bp.route("/", methods=["GET"])
-def get_all_algorithm():
+@strategy_bp.route("/", methods=["GET"])
+def get_all_strategy():
     """
-    Returns a list of algorithms and their details. Probably don't need to
+    Returns a list of Strategies and their details. Probably don't need to
     paginate that, right?
     """
     db_session = give_session()
-    all_algorithms = db_session.query(Algorithm).all()
+    all_strats = db_session.query(Strategy).all()
 
-    return make_response(jsonify([algo.as_dict() for algo in all_algorithms]), 200)
+    return make_response(jsonify([strat.as_dict() for strat in all_strats]), 200)
 
 
-@algorithm_bp.route("/", methods=["POST"])
-def algorithm_post():
+@strategy_bp.route("/", methods=["POST"])
+def strategy_create():
     """
     expects a json/application encoded request in the following format:
     {
-        "algorithm_name": "Really Great Algorithm Maybe",
+        "name": "Really Great Algorithm Maybe",
         "execution_code": "some python code",
         "data_format": "CANDLE" or "TICK",
         "subscribes_to": ["GDAX:BTC-USD:5M"],
         "historical_context_number": 40
     }
 
-    - `algorithm_name` shall be a unique, user-defined name for the algorithm
-    - `execution_code` shall contain the code for executing the strategy.
+    - `aname` shall be a unique, user-defined name for the strategy
+    - `execution_code` shall contain the code for executing the strategy
     - `data_format` shall specify whether the algorithm listens to candles or ticks
     - `subscribes_to` specifies data sources this strategy will subscribe to
     - `historical_context_number` optionally specifies the number of candles or
@@ -70,21 +70,21 @@ def algorithm_post():
     db_session = give_session()
     # force will attempt to read the json even if the client does not specify
     # application/json as the content type, It will fail with an exception.
-    new_algorithm = GetOrThrowDict(request.get_json(force=True))
+    new_strategy = GetOrThrowDict(request.get_json(force=True))
     algorithm_id = str(uuid.uuid4())
 
-    algorithm_instance = Algorithm(
+    strategy_instance = Strategy(
         id = algorithm_id,
-        name = new_algorithm["name"],
-        execution_code = new_algorithm["execution_code"],
-        data_format = new_algorithm["data_format"],
-        subscribes_to = new_algorithm["subscribes_to"],
-        historical_context_number = new_algorithm.get(
+        name = new_strategy["name"],
+        execution_code = new_strategy["execution_code"],
+        data_format = new_strategy["data_format"],
+        subscribes_to = new_strategy["subscribes_to"],
+        historical_context_number = new_strategy.get(
             "historical_context_number"
         ) or 30
     )
 
-    db_session.add(algorithm_instance)
+    db_session.add(strategy_instance)
     try:
         db_session.commit()
     except Exception as e:
@@ -93,11 +93,11 @@ def algorithm_post():
             "exception": str(e)
         }), 500)
 
-    return make_response(jsonify(algorithm_instance.as_dict()), 201)
+    return make_response(jsonify(strategy_instance.as_dict()), 201)
 
 
-@algorithm_bp.route("/execute/<algorithm_id>/", methods=["POST"])
-def algorithm_execute(algorithm_id):
+@strategy_bp.route("/execute/<strategy_id>/", methods=["POST"])
+def strategy_execute(strategy_id):
     """
     This is a bit like the observer pattern but with multiple services involved.
     Expects to receive the following from the data or backtesting service.
