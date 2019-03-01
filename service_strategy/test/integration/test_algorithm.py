@@ -106,6 +106,8 @@ def on_data(self, context, update):
         }
     }
 
-    call_response = client.post("/strategy/{}".format(created_dict["id"]), json=data)
+    call_response = client.post("/strategy/execute/{}".format(created_dict["id"]),
+    json=data)
+    import pdb; pdb.set_trace()
 
-    assert "signal" in call_response
+    assert "signal" in call_response.json

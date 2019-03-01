@@ -96,7 +96,7 @@ def strategy_create():
     return make_response(jsonify(strategy_instance.as_dict()), 201)
 
 
-@strategy_bp.route("/execute/<strategy_id>/", methods=["POST"])
+@strategy_bp.route("/execute/<strategy_id>", methods=["POST"])
 def strategy_execute(strategy_id):
     """
     This is a bit like the observer pattern but with multiple services involved.
