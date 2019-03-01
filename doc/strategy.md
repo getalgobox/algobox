@@ -1,14 +1,14 @@
-# Creating an Algorithm
+# Creating an Strategy
 
-An algorithm in AlgoBox is a child class of `core.algorithm.ABAlgorithm`.
+An strategy in AlgoBox is a child class of `core.strategy.ABStrategy`.
 It must implement two methods. `initialise` and `on_data`.
 
-`on_data` will be called when there is a new update your algorithm cares about. The update and historical context will be provided.
+`on_data` will be called when there is a new update your strategy cares about. The update and historical context will be provided.
 
 ## Execution
 
-The algorithm is executed with "exec" where a context will be provided.
-It is important that the algorithm is defined with `class MyAlgorithm(ABAlgorithm):`
+The strategy is executed with "exec" where a context will be provided.
+It is important that the strategy is defined with `class MyStrat(ABStrategy):`
 and that it implements the above mentioned methods.
 
 The code you submit will be ran with `exec` in the execution environment, defining

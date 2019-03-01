@@ -72,7 +72,7 @@ class GeneratorHandler(DataHandler):
         """
         Generators produce updates one at a time, however - we need to have
         some historical context to perform time series analyis on. This
-        is specified by the `historical_context_number` parameter. An algorithm
+        is specified by the `historical_context_number` parameter. A strategy
         cannot begin analysis without this context.
         """
         for _ in range(0, self.historical_context_number):

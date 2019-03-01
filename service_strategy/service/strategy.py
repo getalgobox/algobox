@@ -48,7 +48,7 @@ def strategy_create():
     """
     expects a json/application encoded request in the following format:
     {
-        "name": "Really Great Algorithm Maybe",
+        "name": "Really Great Strategy Maybe",
         "execution_code": "some python code",
         "data_format": "CANDLE" or "TICK",
         "subscribes_to": ["GDAX:BTC-USD:5M"],
@@ -57,10 +57,10 @@ def strategy_create():
 
     - `aname` shall be a unique, user-defined name for the strategy
     - `execution_code` shall contain the code for executing the strategy
-    - `data_format` shall specify whether the algorithm listens to candles or ticks
+    - `data_format` shall specify whether the strategy listens to candles or ticks
     - `subscribes_to` specifies data sources this strategy will subscribe to
     - `lookback_period` optionally specifies the number of candles or
-       ticks previous to this one which will be available to the algorithm in
+       ticks previous to this one which will be available to the strategy in
        its context upon execution, defaults to 30.
 
       Eventually subscribes_to will support regex or something more flexible.
@@ -71,10 +71,10 @@ def strategy_create():
     # force will attempt to read the json even if the client does not specify
     # application/json as the content type, It will fail with an exception.
     new_strategy = GetOrThrowDict(request.get_json(force=True))
-    algorithm_id = str(uuid.uuid4())
+    strategy_id = str(uuid.uuid4())
 
     strategy_instance = Strategy(
-        id = algorithm_id,
+        id = strategy_id,
         name = new_strategy["name"],
         execution_code = new_strategy["execution_code"],
         data_format = new_strategy["data_format"],
@@ -89,7 +89,7 @@ def strategy_create():
         db_session.commit()
     except Exception as e:
         return make_response(jsonify({
-            "error": "We were unable to write your algorithm to the database.",
+            "error": "We were unable to write your strategy to the database.",
             "exception": str(e)
         }), 500)
 

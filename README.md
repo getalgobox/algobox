@@ -1,7 +1,7 @@
 ![AlgoBox](algobox.png)
 
 Algobox is an open source framework for writing, managing and running trading
-algorithms. It provides an interface and infrastructure for developing, deploying
+strategies. It provides an interface and infrastructure for developing, deploying
 and running algorithmic trading bots. It allows users to self-host these bots
 on their own infrastructure, at home or in the cloud.
 

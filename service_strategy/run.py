@@ -1,3 +1,3 @@
-from service import algoapp
+from service import stratapp
 
-algoapp.run(host="localhost", debug=True, port=5000)
+stratapp.run(host="localhost", debug=True, port=5000)

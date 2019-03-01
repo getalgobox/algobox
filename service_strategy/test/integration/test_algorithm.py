@@ -8,13 +8,13 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from service.models import Algorithm
+from service.models import Strategy
 from testcontainers.postgres import PostgresContainer
 
 @pytest.fixture
 def client():
-    service.algoapp.config["TESTING"] = True
-    client = service.algoapp.test_client()
+    service.stratapp.config["TESTING"] = True
+    client = service.stratapp.test_client()
     return client
 
 @pytest.fixture
@@ -40,11 +40,11 @@ def psql():
 def psql_stop(psql_container):
     psql_container.stop()
 
-def test_create_algorithm(client, psql):
+def test_create_strategy(client, psql):
     container = psql["container"]
     session = psql["session"]
 
-    response = client.post("/algorithm/", json={
+    response = client.post("/strategy/", json={
         "name": "Lambo by Monday",
         "execution_code": "some python code",
         "data_format": "CANDLE",
@@ -53,15 +53,15 @@ def test_create_algorithm(client, psql):
     })
 
     assert response.status_code == 201
-    assert len(json.loads(client.get("/algorithm/").data)) > 0
+    assert len(json.loads(client.get("/strategy/").data)) > 0
 
     psql_stop(container)
 
-def test_create_algortihm_missing_field(client, psql):
+def test_create_strategy_missing_field(client, psql):
     container = psql["container"]
     session = psql["session"]
 
-    response = client.post("/algorithm/", json={
+    response = client.post("/strategy/", json={
         "name": "Lambo by Monday",
         "execution_code": "some python code",
         "data_format": "CANDLE",
@@ -70,6 +70,6 @@ def test_create_algortihm_missing_field(client, psql):
 
     assert response.status_code == 400
     assert b" key is required" in response.data
-    assert len(json.loads(client.get("/algorithm/").data)) > 0
+    assert len(json.loads(client.get("/strategy/").data)) > 0
 
     psql_stop(container)

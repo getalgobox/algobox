@@ -18,7 +18,7 @@ bt = core.backtest.manager.BacktestManager(
     topic="IG:LLOY:1D",
     dt_from=dt_from,
     dt_to=dt_to,
-    algo_id=1,
+    strat_id=1,
     data=data
 )
 bt.push_update = bt._dry_push_random_signal

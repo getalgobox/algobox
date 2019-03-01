@@ -1,8 +1,8 @@
 from flask import Flask
-from service.algorithm import algorithm_bp
+from service.strategy import strategy_bp
 from config import Config
 
-algoapp = Flask(__name__)
-algoapp.config.from_object = Config
+stratapp = Flask(__name__)
+stratapp.config.from_object = Config
 
-algoapp.register_blueprint(algorithm_bp, url_prefix="/algorithm")
+stratapp.register_blueprint(strategy_bp, url_prefix="/strategy")

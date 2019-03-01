@@ -17,7 +17,7 @@ class BacktestManager(object):
     """
     This is the class that will drive the backtest.
 
-    It knows only the id of the algorithm it will call, nothing about the
+    It knows only the id of the strategy it will call, nothing about the
     code it will execute, which will be handled by another service.
 
     This class will also be responsible for updating the account instance
@@ -34,7 +34,7 @@ class BacktestManager(object):
             data it cares about.
         * dt_from (datetime.datetime) when to start the backtest
         * dt_to (datetime.datetime) when to end the backtest
-        * algo_id (uuid, string) The ID of the algorithm according to the algo
+        * strat_id (uuid, string) The ID of the strategy according to the algo
             service.
         * lookback_period (number)of previous data updates to
             include as context.
@@ -49,15 +49,15 @@ class BacktestManager(object):
             const.topic.Topic() instance.
         * start (datetime.datetime) when to start the backtest
         * end (datetime.datetime) when to end the backtest
-        * algo_id (uuid, string)
+        * strat_id (uuid, string)
         * lookback_period (integer) number of previous updates to
-            provide as historical context for the algorithm
+            provide as historical context for the strategy
             (will be renamed lookback_length)
-        * algo_service_uri (string) the uri for the algorithm service
-        * algo_uuid_uir (string) full uri for the algorithm
+        * strat_service_uri (string) the uri for the strategy service
+        * strat_uuid_uri (string) full uri for the strategy
         * on_open_actions (deque) events which should be acted on next tick.
-            For example, given a backtest / real algorithm with 5M candles:
-            At 10:00, the algorithm decides to produce a signal having just
+            For example, given a backtest / real strategy with 5M candles:
+            At 10:00, the strategy decides to produce a signal having just
             recieved OHCLV for period 9:55-10:00. The price at close is no
             longer available. The actual signal needs to be executed in
             10:00-10:05 period at open. The BacktestManager currently uses
@@ -71,19 +71,19 @@ class BacktestManager(object):
 
     """
 
-    def __init__(self, topic, dt_from, dt_to, algo_id, lookback_period=30,
-        data=None, algo_service_uri=None, starting_balance = 10000):
+    def __init__(self, topic, dt_from, dt_to, strat_id, lookback_period=30,
+        data=None, strat_service_uri=None, starting_balance = 10000):
 
         self.complete = False
 
         self.topic = core.topic.Topic(topic)
         self.start = dt_from
         self.end = dt_to
-        self.algo_id = str(algo_id)
+        self.strat_id = str(strat_id)
         self.lookback_period = lookback_period
 
-        self.algo_service_uri = algo_service_uri or "http://algoservice:5550"
-        self.algo_uuid_uri = self.algo_service_uri + "/" + self.algo_id
+        self.strat_service_uri = strat_service_uri or "http://algoservice:5550"
+        self.strat_service_uri = self.strat_service_uri + "/" + self.strat_id
 
         self.account = core.backtest.account.BacktestAccount(starting_balance)
         self.observer = core.reporting.observer.ABObserver()
@@ -146,8 +146,8 @@ class BacktestManager(object):
                     )
                     self.account.sell(self.topic.asset, update.open)
 
-            # push the context and update to the algorithm* and retrieve signal
-            # *: may be the algorithm or one of the
+            # push the context and update to the strategy* and retrieve signal
+            # *: may be the strategy or one of the
             # BacktestManager._dry_push_* methods
 
             signal = self.push_update(context, update)
@@ -229,7 +229,7 @@ class BacktestManager(object):
             "update": update.to_dict()
         }
 
-        response = requests.post(self.algo_service_uri, json=d)
+        response = requests.post(self.strat_service_uri, json=d)
 
         if response.status_code not in [200, 201]:
             raise ValueError("Something went wrong when pushing the update to \
@@ -239,7 +239,7 @@ class BacktestManager(object):
 
     def _pusher_dry(self, context, update):
         """
-        Don't update any algorithm for a signal.
+        Don't update any strategy for a signal.
         """
         return {"signal": core.const.Event.SIGNAL_NO_ACTION}["signal"]
 

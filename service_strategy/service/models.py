@@ -11,7 +11,7 @@ Base = declarative_base()
 engine = create_engine(Config.DB_CONNECT_STR)
 
 class Strategy(Base):
-    __tablename__ = "algorithm"
+    __tablename__ = "strategy"
     id = Column(UUID, primary_key=True)
     name = Column(String(128))
     execution_code = Column(String(10000))

@@ -31,7 +31,7 @@ def bt(daily_series):
         topic="GDAX:BTC-USD:1D",
         dt_from=daily_series.start,
         dt_to=daily_series.end,
-        algo_id=str(uuid.uuid4()),
+        strat_id=str(uuid.uuid4()),
         lookback_period=30,
         data=daily_series
     )
@@ -46,7 +46,7 @@ def test_run_backtest(daily_series):
         topic="GDAX:BTC-USD:1D",
         dt_from=daily_series.start,
         dt_to=daily_series.end,
-        algo_id=str(uuid.uuid4()),
+        strat_id=str(uuid.uuid4()),
         lookback_period=30,
         data=daily_series
     )
