@@ -53,6 +53,8 @@ def test_create_strategy(client, psql):
     })
 
     assert response.status_code == 201
+    # pretty much always true until we actually implement testcontainers
+    # properly here. !TODO (flask test client magic methods for replacing session?)
     assert len(json.loads(client.get("/strategy/").data)) > 0
 
     psql_stop(container)
@@ -73,3 +75,37 @@ def test_create_strategy_missing_field(client, psql):
     assert len(json.loads(client.get("/strategy/").data)) > 0
 
     psql_stop(container)
+
+def test_run_algorithm(client, psql):
+    strat_code = """
+def initialise(self):
+    pass
+
+def on_data(self, context, update):
+    return {"signal": core.signal.random()}
+"""
+
+    create_response = client.post("/strategy/", json={
+        "name": "Lambo by Now",
+        "execution_code": strat_code,
+        "data_format": "CANDLE",
+        "subscribes_to": ["GDAX:BTC-USD:5M"],
+        "lookback_period": 0
+    })
+
+    created_dict = create_response.json
+
+    assert create_response.status_code == 201
+
+    data = {"context": [], "update": {
+            "datetime": 1551398400,
+            "open": 100,
+            "close": 101,
+            "high": 102,
+            "low": 98.20
+        }
+    }
+
+    call_response = client.post("/strategy/{}".format(created_dict["id"]), json=data)
+
+    assert "signal" in call_response

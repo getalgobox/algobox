@@ -16,8 +16,24 @@ We have a trello board where we track todo's, bugs and more [here](https://trell
 ![](https://i.imgur.com/2HAoR3F.jpg)
 
 
-# todo
- - [ ] global models and a shared package for classes needed everywhere
+# Scope
+
+This is a large project. It will probably never be feature complete.
+
+These are some of my ambitions for this project:
+
+  - To provide a suite of tools for managing, normalising and validating data
+     from within the UI.
+  - To provide an extensible framework for data collection and storage.
+  - To provide live, paper and backtest execution capabilities for strategies
+     across stocks, equities, forex & crypto.
+  - To provide excellent reporting and visualisation for all strategies
+  - To provide a UI to manage deployment of algorithms, their configuration,
+     parameters and performance.
+
+# Current Functionality
+ - AlgoBox has a Backtesting and Reporting engine built on ffn.
+    Documentation can be found [here](doc/backtest.md) & [here](core/backtest/manager.py). There are Jupyter notebooks showing usage in the examples folder [here](examples/).
 
 
 # Workflow

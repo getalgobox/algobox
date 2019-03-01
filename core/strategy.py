@@ -78,8 +78,13 @@ class ABStrategy(ABC):
 
         return res
 
+def define_component_methods(strategy_text):
+    """
+    For the UI, we ask users only to define `initialise` & `on_data`.
 
-def execute_strategy(strategy_class, context, update, additional_imports=[], lookback_period=30):
+    """
+
+def execute(strategy_class, context, update, additional_imports=[], lookback_period=30):
     """
     This function will setup the Python Context for the strategy instance,
     execute it and return the result to the caller.
@@ -91,6 +96,9 @@ def execute_strategy(strategy_class, context, update, additional_imports=[], loo
     import datetime as dt
     import pandas as pd
     import numpy as np
+
+    import core
+
     import ffn
 
     for module_name in additional_imports:

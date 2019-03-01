@@ -55,7 +55,7 @@ def strategy_create():
         "lookback_period": 40
     }
 
-    - `aname` shall be a unique, user-defined name for the strategy
+    - `name` shall be a unique, user-defined name for the strategy
     - `execution_code` shall contain the code for executing the strategy
     - `data_format` shall specify whether the strategy listens to candles or ticks
     - `subscribes_to` specifies data sources this strategy will subscribe to
@@ -106,6 +106,47 @@ def strategy_execute(strategy_id):
         "update": {},
         "context": [],
         "topic": "GDAX:BTC-USD:5M",
-        "format": "CANDLE"
     }
     """
+    db_session = give_session()
+
+    req = GetOrThrowDict(request.get_json(force=True))
+    strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
+
+    UserStrat = type("UserStrat", core.strategy.ABStrategy, {
+        "initialise": initialise,
+        "on_data": on_data
+    })
+
+    context = req["context"]
+    update = req["update"]
+
+    context = [core.format.Candle.from_dict(c) for c in context]
+    update = core.format.Candle.from_dict(c)
+
+    signal = core.strategy.execute(UserStrat, req["context"], req["update"],
+        lookback_period=strategy_rec.lookback_period
+    )
+
+    return make_response(jsonify(signal), 200)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#

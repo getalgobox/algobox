@@ -197,8 +197,8 @@ class BacktestManager(object):
             * user_strategy (core.strategy.ABStrategy) user defined strat
             * additional_imports (list[string]) list of additional modules
                 you would like in your strategy execution environment.
-                See source of core.strategy.execute_strategy to see already
-                included.
+                See source of core.strategy.execute to see already included
+                modules.
 
         Returns:
             * pusher_method (function) this method will 'push' data to your
@@ -206,7 +206,7 @@ class BacktestManager(object):
         """
 
         def user_pusher(context, update):
-            signal =  core.strategy.execute_strategy(
+            signal =  core.strategy.execute(
                 strategy_class=user_strategy,
                 context=context,
                 update=update,
@@ -226,7 +226,8 @@ class BacktestManager(object):
         """
         d = {
             "context": [candle.to_dict() for candle in context],
-            "update": update.to_dict()
+            "update": update.to_dict(),
+            "topic": self.topic
         }
 
         response = requests.post(self.strat_service_uri, json=d)
