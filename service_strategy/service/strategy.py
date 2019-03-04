@@ -1,9 +1,12 @@
 import json
 import uuid
 import collections
+import traceback
 
 from flask import Blueprint, request, make_response, abort, jsonify
 from flask import current_app
+
+import core
 
 from service.models import Strategy
 from service.models import give_session
@@ -113,16 +116,31 @@ def strategy_execute(strategy_id):
     req = GetOrThrowDict(request.get_json(force=True))
     strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
 
-    UserStrat = type("UserStrat", core.strategy.ABStrategy, {
+    # try:
+    exec(strategy_rec.execution_code)
+    print(dir())
+    UserStrat = type("UserStrat", (core.strategy.ABStrategy, ), {
         "initialise": initialise,
         "on_data": on_data
     })
 
+    # except Exception as e:
+    #     return make_response(jsonify({"error": """
+    #     There was an error executing the strategy code you provided.
+    #     Exception: {}
+    #     Traceback:
+    #     {}
+    #
+    #     """.format(
+    #         str(e), traceback.format_exc()
+    #     )}), 400)
+
+
     context = req["context"]
-    update = req["update"]
+    update = GetOrThrowDict(req["update"])
 
     context = [core.format.Candle.from_dict(c) for c in context]
-    update = core.format.Candle.from_dict(c)
+    update = core.format.Candle.from_dict(update)
 
     signal = core.strategy.execute(UserStrat, req["context"], req["update"],
         lookback_period=strategy_rec.lookback_period

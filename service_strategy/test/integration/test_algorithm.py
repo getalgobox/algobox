@@ -94,6 +94,7 @@ def on_data(self, context, update):
     })
 
     created_dict = create_response.json
+    print(created_dict)
 
     assert create_response.status_code == 201
 
@@ -102,7 +103,8 @@ def on_data(self, context, update):
             "open": 100,
             "close": 101,
             "high": 102,
-            "low": 98.20
+            "low": 98.20,
+            "topic": "GDAX:BTC-USD:5M"
         }
     }
 

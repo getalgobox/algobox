@@ -78,11 +78,10 @@ class ABStrategy(ABC):
 
         return res
 
-def define_component_methods(strategy_text):
-    """
-    For the UI, we ask users only to define `initialise` & `on_data`.
-
-    """
+# def define_component_methods(strategy_text):
+#     """
+#     For the UI, we ask users only to define `initialise` & `on_data`.
+#     """
 
 def execute(strategy_class, context, update, additional_imports=[], lookback_period=30):
     """
