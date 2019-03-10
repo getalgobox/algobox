@@ -2,3 +2,5 @@
 *.coverage
 *.coverage*
 *.dev.*
+.pytest_cache/
+.ipynb_checkpoints/

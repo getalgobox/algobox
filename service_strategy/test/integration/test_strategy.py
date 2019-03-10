@@ -82,7 +82,7 @@ def initialise(self):
     pass
 
 def on_data(self, context, update):
-    return {"signal": core.signal.random()}
+    return core.signal.random()
 """
 
     create_response = client.post("/strategy/", json={
@@ -110,6 +110,5 @@ def on_data(self, context, update):
 
     call_response = client.post("/strategy/execute/{}".format(created_dict["id"]),
     json=data)
-    import pdb; pdb.set_trace()
 
     assert "signal" in call_response.json

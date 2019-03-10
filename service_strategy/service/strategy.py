@@ -117,7 +117,9 @@ def strategy_execute(strategy_id):
     strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
 
     # try:
-    exec(strategy_rec.execution_code)
+
+    initialise, on_data = core.strategy.define_and_return(strategy_rec.execution_code)
+
     print(dir())
     UserStrat = type("UserStrat", (core.strategy.ABStrategy, ), {
         "initialise": initialise,
@@ -137,7 +139,7 @@ def strategy_execute(strategy_id):
 
 
     context = req["context"]
-    update = GetOrThrowDict(req["update"])
+    update = req["update"]
 
     context = [core.format.Candle.from_dict(c) for c in context]
     update = core.format.Candle.from_dict(update)

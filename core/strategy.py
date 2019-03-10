@@ -78,10 +78,13 @@ class ABStrategy(ABC):
 
         return res
 
-# def define_component_methods(strategy_text):
-#     """
-#     For the UI, we ask users only to define `initialise` & `on_data`.
-#     """
+def define_and_return(code):
+    exec(code, globals(), globals())
+
+    assert callable(initialise)
+    assert callable(on_data)
+
+    return initialise, on_data
 
 def execute(strategy_class, context, update, additional_imports=[], lookback_period=30):
     """
