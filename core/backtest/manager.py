@@ -153,7 +153,7 @@ class BacktestManager(object):
             # *: may be the strategy or one of the
             # BacktestManager._dry_push_* methods
 
-            signal = self.push_update(context, update)["signal"]
+            signal = self.push_update(context, update)
 
             if signal in core.const.Event.SIGNAL_ACTIONABLE:
                 # update.datetime represents the current time in our backtest
@@ -255,7 +255,7 @@ class BacktestManager(object):
         """
             Doesn't push any data, returns a random signal.
         """
-        return core.signal.random()
+        return {"signal": core.signal.random()}["signal"]
 
     def finalise(self):
 

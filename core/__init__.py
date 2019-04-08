@@ -12,7 +12,6 @@ import core.slippage
 import core.time
 import core.ts_generator
 import core.event
-import core.fees
 import core.signal
 import core.timeseries
 import core.backtest

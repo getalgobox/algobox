@@ -79,11 +79,10 @@ def test_run_with_user_pusher(bt):
     class MyAmazingStrat(core.strategy.ABStrategy):
 
         def on_data(self, context, update):
-            return core.signal.random()
+            return {"signal": core.signal.random()}["signal"]
 
     push_function = bt.pusher_factory(MyAmazingStrat)
     bt.push_update = push_function
 
     for context, update in bt:
         pass
-    
