@@ -68,6 +68,9 @@ class BacktestManager(object):
             BacktestManager._pusher_strategy_service,
             BacktestManager._pusher_dry,
             BacktestManager._pusher_dry_random
+            This property is confusing if looking at algobox from a library
+            standpoint as opposed to a systems standpoint. We should encapuslate
+            this behaviour in seperate classes. !TODO
 
     """
 
@@ -150,7 +153,7 @@ class BacktestManager(object):
             # *: may be the strategy or one of the
             # BacktestManager._dry_push_* methods
 
-            signal = self.push_update(context, update)
+            signal = self.push_update(context, update)["signal"]
 
             if signal in core.const.Event.SIGNAL_ACTIONABLE:
                 # update.datetime represents the current time in our backtest
@@ -223,6 +226,10 @@ class BacktestManager(object):
         This method will push the new update to the strategy_service.
         Upon receiving a response, it will attempt to marshall it from JSON.
         It will return the signal key from this json.
+
+        This is the pusher we will use for communication to the algobox service.
+        The other 'pushers' do not really push to the service, but simulate that.
+        They allow this class to be used as an independent backtester.
         """
         d = {
             "context": [candle.to_dict() for candle in context],
@@ -240,7 +247,7 @@ class BacktestManager(object):
 
     def _pusher_dry(self, context, update):
         """
-        Don't update any strategy for a signal.
+        Don't update any strategy for a signal; return SIGNAL_NO_ACTION.
         """
         return {"signal": core.const.Event.SIGNAL_NO_ACTION}["signal"]
 

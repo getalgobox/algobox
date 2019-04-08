@@ -21,11 +21,10 @@ bt = core.backtest.manager.BacktestManager(
     strat_id=1,
     data=data
 )
-bt.push_update = bt._dry_push_random_signal
+bt.push_update = bt._pusher_dry_random
 
 for context, update in bt:
     pass
 
 perf = bt.finalise()
 print(perf["equity"].stats)
-import pdb; pdb.set_trace()
