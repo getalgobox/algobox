@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import JSON, UUID
 from config import Config
 
 Base = declarative_base()
-engine = create_engine(Config.DB_CONNECT_STR)
+
 
 class Strategy(Base):
     __tablename__ = "strategy"
@@ -31,6 +31,15 @@ class Strategy(Base):
             "active": self.active
         }
 
+def give_session():
+    engine = create_engine(Config.DB_CONNECT_STR)
+    session = scoped_session(sessionmaker(bind=engine))
+    Base.metadata.create_all(engine)
+    return session
 
-Base.metadata.create_all(engine)
-give_session = scoped_session(sessionmaker(bind=engine))
+
+def give_test_session(port):
+    testengine = create_engine(Config.DB_TEST_CONNECT_STR.format(port))
+    test_session = scoped_session(sessionmaker(bind=testengine))
+    Base.metadata.create_all(testengine)
+    return test_session

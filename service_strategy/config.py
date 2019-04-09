@@ -6,7 +6,7 @@ class Config(object):
 
 class Development(Config):
     DB_CONNECT_STR = "postgresql://algobox:algobox@localhost:5432/algobox"
-
+    DB_TEST_CONNECT_STR = "postgresql://test:test@0.0.0.0:{}/test"
 
 class Production(Config):
     pass

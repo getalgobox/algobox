@@ -9,30 +9,30 @@ from flask import current_app
 import core
 
 from service.models import Strategy
-from service.models import give_session
+from service.models import give_session, give_test_session
+from service.utils import GetOrThrowDict
 
 strategy_bp = Blueprint('strategy', __name__)
 
-class GetOrThrowDict(collections.UserDict):
+def give_db_session(request):
     """
-    Used to wrap dictionaries which should always have keys we request with
-    __getitem__.
+    Check if we're testing, if so return test session to use test psql server.
+    Otherwise; return normal session.
 
-    If a key is not present the user has made a mistake, and should
-    be informed that they are missing a required key.
+    Possibly exploitable or at least weird for a public API. If we ever envision
+    AlgoBox being used on a multi-user, platform we should obviously add
+    authentication preventing POTENTIAL exploitation of this.
 
-    If a key is optional, the get method should be used as this is unchanged.
+    We could add the postgres port into the header per request but we should
+    only be running tests serially for now. If we try and run multiple
+    tests at once, this will probably break.
     """
 
-    def __getitem__(self, key):
-        try:
-            return self.data[key]
-        except KeyError as e:
-            abort(make_response(jsonify({
-                "error": "the '{}' key is required but was was not found in\
-                the object you provided.".format(key).replace("\n", "")
-            }), 400))
-
+    if "TESTING" in request.headers:
+        return give_test_session(request.headers["port"])
+    else:
+        import pdb; pdb.set_trace()
+        return give_session()
 
 @strategy_bp.route("/", methods=["GET"])
 def get_all_strategy():
@@ -40,11 +40,33 @@ def get_all_strategy():
     Returns a list of Strategies and their details. Probably don't need to
     paginate that, right?
     """
-    db_session = give_session()
+    db_session = give_db_session(request)
     all_strats = db_session.query(Strategy).all()
 
     return make_response(jsonify([strat.as_dict() for strat in all_strats]), 200)
 
+@strategy_bp.route("/<id>", methods=["GET"])
+def get_single_strategy(id):
+    db_session = give_db_session(request)
+    strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
+    return make_response(jsonify(strategy_rec.as_dict()), 200)
+
+@strategy_bp.route("/subscribed", methods=["GET"])
+def strategy_get_subscribed():
+    """
+    Return a map of strategies and topics they subscribe to.
+    """
+
+    subscriber_map = collections.defaultict(list)
+
+    strategies = db_session.query(Strategy).filter_by(active=True).all()
+    for strat in strategy:
+        subscriber_map[strat.id] = strat.subscribes_to
+
+    # filter out strategies subscribed to nothing, probably..
+    subscriber_map = {k: v for k, v in subscriber_map.items() if v}
+
+    return make_response(jsonify(subscriber_map), 200)
 
 @strategy_bp.route("/", methods=["POST"])
 def strategy_create():
@@ -70,7 +92,7 @@ def strategy_create():
 
       Returns a json object of the new record in full, including unique ID.
     """
-    db_session = give_session()
+    db_session = give_db_session(request)
     # force will attempt to read the json even if the client does not specify
     # application/json as the content type, It will fail with an exception.
     new_strategy = GetOrThrowDict(request.get_json(force=True))
@@ -98,7 +120,6 @@ def strategy_create():
 
     return make_response(jsonify(strategy_instance.as_dict()), 201)
 
-
 @strategy_bp.route("/execute/<strategy_id>", methods=["POST"])
 def strategy_execute(strategy_id):
     """
@@ -111,7 +132,7 @@ def strategy_execute(strategy_id):
         "topic": "GDAX:BTC-USD:5M",
     }
     """
-    db_session = give_session()
+    db_session = give_db_session(request)
 
     req = GetOrThrowDict(request.get_json(force=True))
     strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
@@ -149,6 +170,35 @@ def strategy_execute(strategy_id):
     )
 
     return make_response(jsonify(signal), 200)
+
+
+@strategy_bp.route("/<id>", methods=["PATCH"])
+@strategy_bp.route("/<id>", methods=["PUT"])
+def strategy_update(id):
+    """
+    accepts patch like requests or full objects
+    """
+    db_session = give_db_session(request)
+    strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
+
+    for k, v in request.get_json(force=True):
+        setattr(strategy_rec, k, v)
+
+    try:
+        db_session.add(strategy_rec)
+        db_session.commit()
+    except Exception as e:
+        return make_response(
+            jsonify(
+                {"error": "An error occured: {}".format(str(e))}
+            ), 400
+        )
+
+    return make_response(jsonify(strategy_rec.to_dict()), 201)
+
+
+
+
 
 
 
