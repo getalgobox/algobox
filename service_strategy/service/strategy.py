@@ -42,13 +42,14 @@ def get_all_strategy():
     """
     db_session = give_db_session(request)
     all_strats = db_session.query(Strategy).all()
-
+    db_session.remove()
     return make_response(jsonify([strat.as_dict() for strat in all_strats]), 200)
 
 @strategy_bp.route("/<id>", methods=["GET"])
 def get_single_strategy(id):
     db_session = give_db_session(request)
     strategy_rec = db_session.query(Strategy).filter_by(id=strategy_id).one()
+    db_session.remove()
     return make_response(jsonify(strategy_rec.as_dict()), 200)
 
 @strategy_bp.route("/subscribed", methods=["GET"])
@@ -56,10 +57,13 @@ def strategy_get_subscribed():
     """
     Return a map of strategies and topics they subscribe to.
     """
+    db_session = give_db_session()
 
     subscriber_map = collections.defaultict(list)
 
     strategies = db_session.query(Strategy).filter_by(active=True).all()
+
+    db_session.remove()
     for strat in strategy:
         subscriber_map[strat.id] = strat.subscribes_to
 
@@ -112,7 +116,9 @@ def strategy_create():
     db_session.add(strategy_instance)
     try:
         db_session.commit()
+        db_session.remove()
     except Exception as e:
+        db_session.remove()
         return make_response(jsonify({
             "error": "We were unable to write your strategy to the database.",
             "exception": str(e)
@@ -140,6 +146,8 @@ def strategy_execute(strategy_id):
     # try:
 
     initialise, on_data = core.strategy.define_and_return(strategy_rec.execution_code)
+
+    db_session.remove()
 
     print(dir())
     UserStrat = type("UserStrat", (core.strategy.ABStrategy, ), {
@@ -187,7 +195,9 @@ def strategy_update(id):
     try:
         db_session.add(strategy_rec)
         db_session.commit()
+        db_session.remove()
     except Exception as e:
+        db_session.remove()
         return make_response(
             jsonify(
                 {"error": "An error occured: {}".format(str(e))}
