@@ -45,13 +45,13 @@ class CandleTimeSeriesGenerator(object):
         return self
 
     def __next__(self):
-        stdev = 0.03
+        stdev = 1
         try:
             this_dt = self.previous_candle.datetime
         except:
             this_dt = self.start
 
-        while this_dt <= self.end:
+        while this_dt < self.end:
             if not self.previous_candle:
                 if self.trading_hours.open_at(self.start):
                     this_dt = self.start

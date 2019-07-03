@@ -23,15 +23,12 @@ def give_db_session(request):
     AlgoBox being used on a multi-user, platform we should obviously add
     authentication preventing POTENTIAL exploitation of this.
 
-    We could add the postgres port into the header per request but we should
-    only be running tests serially for now. If we try and run multiple
-    tests at once, this will probably break.
+    If we try and run multiple tests at once, this will probably break.
     """
 
     if "TESTING" in request.headers:
         return give_test_session(request.headers["port"])
     else:
-        import pdb; pdb.set_trace()
         return give_session()
 
 @strategy_bp.route("/", methods=["GET"])

@@ -14,7 +14,7 @@ class DataHandler(ABC):
     This interface makes it simple to add more supported types to the Backtesting
     engine and makes it pretty easy to implement a type.
 
-    it will raise a core.exceptions.NoMoreData when there is no more data.
+    It will raise core.exceptions.NoMoreData when there is no more data.
     """
 
     @abstractmethod
@@ -39,7 +39,7 @@ class DataHandler(ABC):
 class ListHandler(DataHandler):
     def __init__(self, list, historical_context_number):
         self.data = list
-        self.context = collections.deque(maxlen=5)
+        self.context = collections.deque(maxlen=historical_context_number)
         self.historical_context_number = historical_context_number
         self.index = self.historical_context_number
 
@@ -62,8 +62,8 @@ class ListHandler(DataHandler):
 class GeneratorHandler(DataHandler):
     def __init__(self, generator, historical_context_number):
         self.generator = generator
-        self.historical_context_number = historical_context_number
         self.context = collections.deque(maxlen=historical_context_number)
+        self.historical_context_number = historical_context_number
         self._init_context()
 
         self.last_update = None
