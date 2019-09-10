@@ -1,6 +1,8 @@
 import inspect
 import collections
 
+from abc import ABC, abstractmethod
+
 import ffn
 import requests
 
@@ -12,8 +14,7 @@ from core.backtest import data_handler
 from core.exceptions import NoMoreData
 
 
-
-class BacktestManager(object):
+class AlgoBoxBacktestManager(ABC):
     """
     This is the class that will drive the backtest.
 
@@ -74,7 +75,7 @@ class BacktestManager(object):
 
     """
 
-    def __init__(self, topic, dt_from, dt_to, strat_id, lookback_period=30,
+    def __init__(self, topic, dt_from, dt_to, lookback_period=30,
         data=None, strat_service_uri=None, starting_balance = 10000):
 
         self.complete = False
@@ -82,11 +83,7 @@ class BacktestManager(object):
         self.topic = core.topic.Topic(topic)
         self.start = dt_from
         self.end = dt_to
-        self.strat_id = str(strat_id)
         self.lookback_period = lookback_period
-
-        self.strat_service_uri = strat_service_uri or "http://algoservice:5550"
-        self.strat_service_uri = self.strat_service_uri + "/" + self.strat_id
 
         self.account = core.backtest.account.BacktestAccount(starting_balance)
         self.observer = core.reporting.observer.ABObserver()
@@ -110,15 +107,12 @@ class BacktestManager(object):
             support retrieving this from a database. Please provide the `data` \
             parameter. See docs/help.")
 
-        self.push_update = self._pusher_strategy_service
-
         self.previous_dt = None
 
     def __iter__(self):
         return self
 
     def __next__(self):
-
         try:
             if self.account.bankrupt:
                 bankrupt_event = core.event.ABEvent(
@@ -193,8 +187,9 @@ class BacktestManager(object):
 
     def pusher_factory(self, user_strategy, additional_imports=[]):
         """
-        This generates the function you should then assign to
-        BacktestManager.push_update
+        Used for creating a pusher for your local strategy. Returns a function
+        with the correct contexts for assigning to `BacktestManager.pusher`
+        Used in running local backtests for local strategies.
 
         Arguments:
             * user_strategy (core.strategy.ABStrategy) user defined strat
@@ -209,7 +204,7 @@ class BacktestManager(object):
         """
 
         def user_pusher(context, update):
-            signal =  core.strategy.execute(
+            signal = core.strategy.execute(
                 strategy_class=user_strategy,
                 context=context,
                 update=update,
@@ -221,13 +216,59 @@ class BacktestManager(object):
 
         return user_pusher
 
+        def _pusher_dry(self, context, update):
+            """
+            Don't update any strategy for a signal; return SIGNAL_NO_ACTION.
+            """
+            return {"signal": core.const.Event.SIGNAL_NO_ACTION}["signal"]
+
+        def _pusher_dry_random(self, context, update):
+            """
+            Doesn't push any data, returns a random signal.
+            """
+            return {"signal": core.signal.random()}["signal"]
+
+        def finalise(self):
+            """
+            Finalise the backtest, generate ffn report.
+            """
+            backtest_series, events = self.observer.retrieve()
+            performance = backtest_series.calc_stats()
+            return performance
+
+class LocalBacktestManager(AlgoBoxBacktestManager):
+    def __init__(
+        self, topic, dt_from, dt_to, user_strategy, lookback_period=30, data=None,
+         starting_balance=10000, additional_strategy_imports=None
+        ):
+        AlgoBoxBacktestManager.__init__(data=data)
+        self.push_update = self.pusher_factory(
+            user_strategy=user_strategy,
+            additional_strategy_imports=additional_strategy_imports
+        )
+
+class RemoteBacktestManager(AlgoBoxBacktestManager):
+    def __init__(
+        self, topic, dt_from, dt_to, strat_id, lookback_period=30,
+        starting_balance=10000, data=None, strat_service_uri=None,
+        ):
+        AlgoBoxBacktestManager.__init__()
+
+        self.strat_id = str(strat_id)
+        self.strat_service_uri = strat_service_uri or "http://algoservice:5550"
+        self.strat_service_uri = self.strat_service_uri + "/" + self.strat_id
+        self.push_update = self._pusher_strategy_service
+
+
     def _pusher_strategy_service(self, context, update):
         """
-        This method will push the new update to the strategy_service.
+        This method will push the new update to the AlgoBox strategy_service.
+        If you would like to push updates to a local Strategy see
+        `BacktestManager.pusher_factory`.
+
         Upon receiving a response, it will attempt to marshall it from JSON.
         It will return the signal key from this json.
 
-        This is the pusher we will use for communication to the algobox service.
         The other 'pushers' do not really push to the service, but simulate that.
         They allow this class to be used as an independent backtester.
         """
@@ -244,27 +285,6 @@ class BacktestManager(object):
             the Strategy Service.")
 
         return json.loads(response.text)["signal"]
-
-    def _pusher_dry(self, context, update):
-        """
-        Don't update any strategy for a signal; return SIGNAL_NO_ACTION.
-        """
-        return {"signal": core.const.Event.SIGNAL_NO_ACTION}["signal"]
-
-    def _pusher_dry_random(self, context, update):
-        """
-            Doesn't push any data, returns a random signal.
-        """
-        return {"signal": core.signal.random()}["signal"]
-
-    def finalise(self):
-
-        """
-        Finalise the backtest, generate ffn report.
-        """
-        backtest_series, events = self.observer.retrieve()
-        performance = backtest_series.calc_stats()
-        return performance
 
 
 

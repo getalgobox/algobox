@@ -8,7 +8,11 @@ import datetime as dt
 import pytest
 
 import core
-from core.backtest.manager import BacktestManager
+
+from core.backtest.manager import LocalBacktestManager
+from core.backtest.manager import RemoteBacktestManager
+from core.strategy import ABStrategy
+
 
 @pytest.fixture
 def daily_series():
@@ -42,13 +46,21 @@ def bt(daily_series):
 
 def test_run_backtest(daily_series):
 
-    bt = BacktestManager(
+    class MyStrat(ABStrategy):
+        def initialise(self):
+            pass
+
+        def on_data(context, update):
+            return core.signal.random()
+
+
+    bt = LocalBacktestManager(
         topic="GDAX:BTC-USD:1D",
         dt_from=daily_series.start,
         dt_to=daily_series.end,
-        strat_id=str(uuid.uuid4()),
         lookback_period=30,
-        data=daily_series
+        data=daily_series,
+        user_strategy=MyStrat
     )
 
     bt.push_update = bt._pusher_dry
